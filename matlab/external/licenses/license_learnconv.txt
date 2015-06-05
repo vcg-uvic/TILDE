@@ -1,0 +1,2 @@
+The source code was programed by Kwang Moo Yi @ EPFL using the
+coefficients provided at http://chardson.com/papers/icra2013richardson.html

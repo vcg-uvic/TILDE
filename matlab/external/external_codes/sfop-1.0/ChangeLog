@@ -1,0 +1,9 @@
+2012-04-20  Falko Schindler <falko.schindler@uni-bonn.de>
+	* release of OpenCL implementation as version 1.0
+
+2012-02-16  Falko Schindler <falko.schindler@uni-bonn.de>
+	* upgrade to version 0.97
+	* included OpenCL implementation
+
+2011-09-13  Falko Schindler <falko.schindler@uni-bonn.de>
+	* first release: version 0.9

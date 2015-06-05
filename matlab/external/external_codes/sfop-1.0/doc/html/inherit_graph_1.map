@@ -1,0 +1,5 @@
+<map id="G" name="G">
+<area shape="rect" id="node1" href="$classSFOP_1_1CImage.html" title="Abstract class declaring an image." alt="" coords="5,32,117,61"/>
+<area shape="rect" id="node3" href="$classSFOP_1_1CImageCl.html" title="Class implementing CImage on the GPU using OpenCL." alt="" coords="171,5,296,35"/>
+<area shape="rect" id="node5" href="$classSFOP_1_1CImageCpu.html" title="Class implementing CImage on the CPU using the CImg library." alt="" coords="165,59,301,88"/>
+</map>

@@ -1,0 +1,31 @@
+           C++ Implementation of the SFOP Keypoint Detector
+                          version 1.0
+ 
+Theory:
+  Wolfgang Foerstner, Timo Dickscheid and Falko Schindler
+  Department of Photogrammetry, University of Bonn, Germany
+
+Implementation:
+  Falko Schindler with support by Daria Makarova, Magnus Becker and Thomas Läbe
+ 
+For further information refer to the SFOP project website
+  http://www.ipb.uni-bonn.de/sfop
+
+SFOP has been published at ICCV'09, see 
+  http://www.ipb.uni-bonn.de/uploads/tx_ikgpublication/foerstner09.detecting.pdf
+
+Please cite as:
+  @inproceedings{
+    foerstner*09:detecting,
+    author={W. F\"orstner and T. Dickscheid and F. Schindler},
+    title={Detecting Interpretable and Accurate Scale-Invariant Keypoints},
+    booktitle={12th IEEE International Conference on Computer Vision (ICCV'09)},
+    address={Kyoto, Japan},
+    year={2009}
+  } 
+
+No warranty for validity of this implementation.
+
+SFOP is distributed under the GNU Lesser General Public License
+(http://www.gnu.org/licenses/lgpl.html).
+

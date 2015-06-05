@@ -1,4 +1,219 @@
-		TILDE: a Temporally Invariant Learned DEtector
+--------------------------------------------------------------------------------
+	    TILDE: a Temporally Invariant Learned DEtector
 	
-The codes will be soon available! We  expect the code to be available before the
-main conference!
+This  software is  the  C++ and  MATLAB implementation  for  the TILDE  keypoint
+detector presented in [1]. The software  provides both the C++ implementation of
+TILDE  which  can  be used  easily  to  detect  keypoints,  and a  MATLAB  based
+evaluation framework.
+
+This  software is  strictly for  academic  purposes only.   For other  purposes,
+please  contact  us.  When  using  this software,  please  cite  [1]  and  other
+appropriate publications if necessary (see matlab/external/licenses for details).
+
+[1] Y.  Verdie, K.   M.  Yi,  P.  Fua,  and V.   Lepetit.  "TILDE:  A Temporally
+    Invariant Learned DEtector.", Computer Vision and Patern Recognition (CVPR),
+    2015 IEEE Conference on.
+
+
+Contact:
+
+Yannick Verdie : yannick<dot>verdie<at>epfl<dot>ch
+Kwang Moo Yi   : kwang<dot>yi<at>epfl<dot>ch
+
+
+--------------------------------------------------------------------------------
+      	  		<< The TILDE C++ Implementation >>
+
+The C++  implementation of TILDE provides  an easy-to-use library with  a simple
+demo program  to detect and  display the  keypoints. We provide  TILDE keypoints
+learned with the Webcam dataset in [1].
+
+----
+NOTES:
+
+ - Code compiles with clang (macOS) and gcc-4.9 (Linux)
+ - The code will generate a static  library, a dynamic library (libTILDE) and an
+   example code (demo).
+
+----
+REQUIREMENTS:
+
+ - OpenCV 2.4.9 or higher
+ - CMake 2.8 or higher
+
+----
+USAGE:
+
+Build the  libraries and  the demo.  Standard procedure is  as follow  (from the
+project root directory):
+
+ >> cd c++
+ >> mkdir build
+ >> cd build
+ >> cmake ..
+ >> make
+
+Then you can run the demo code from the build directory with:
+
+ >> ./demo
+
+----
+IMPORTANT FUNCTIONS:
+
+The main function is getTILDEKeyPoints (see demo.cpp)
+
+std::vector<cv::KeyPoint> getTILDEKeyPoints(cv::Mat image,
+			  		    std::string pathFilter,
+					    bool useApprox,
+					    bool sortKeypoints,
+					    bool keepPositiveOnly,
+					    cv::Mat *score)
+					    
+<<input parameters>>:
+
+ - image: a openCV U8C3 Mat object representing the image to process
+ - pathFilter: a std string object giving the name of the filter to apply
+ - useApprox:  a boolean  indicating to  use TILDE  (false) or  the approximated
+   version of TILDE (true).
+ - sortKeypoints:  (true) we  sort the  keypoints by  decreasing order  of their
+   scores
+ - keepPositiveOnly: (true) only the keypoints with positive score are returned
+ - score: a  pointer to an  openCV Mat  image, if the  pointer is not  null, the
+   score map is retuned in addition to the keypoints
+ 
+<<output parameters>>:
+
+ - std::vector<KeyPoint>: a std vector of OpenCV KeyPoint object (see OpenCV doc
+   for more details on how to use them)
+
+----
+DIRECTORY STRUCTURE:
+
+<c++> : Main project directory
+  |
+  |------ <src> : Contains our main library code and a toy example (demo.cpp)
+  |
+  |------ <3rdParties> : Contains  the 3rd party codes  which our implementation
+  |	  	         is dependent on.
+  |			 
+  |------ <filters> : Contains the filters  pre-learned with the Webcam dataset.
+    	  	      When  a number  is added  in the  name of  the filter,  it
+  	  	      denotes that the filter is  for use with the approximation
+  	  	      flag  on (i.e.  it is  the approximated  TILDE). The  name
+  	  	      indicates which dataset was used to learn this filter.
+  
+<data> : Contains  a test example testImage.png which is  read by demo.cpp. Also
+         used by  the MATLAB  evaluation framework (detail  below) to  store the
+         dataset for evaluation.
+
+----
+NOTE ON THE LICENSE OF 3RD PARTY SOFTWARE:
+
+In  case of  3rd  party software  used  in  this project.  Please  refer to  the
+corresponding copyright notifications on the top of each code.
+
+
+
+--------------------------------------------------------------------------------
+		      The MATLAB Evaluation Framework
+
+The  MATLAB  evaluation   framework  provides  an  easy  way   to  evaluate  the
+repeatability of different detectors. We provide the implementations we used for
+SIFT, SURF, FAST-9,  LCF, EdgeFoci, MSER along with our  own TILDEP and TILDEP24
+(see [1] for details).
+
+----
+NOTE:
+
+Codes run  partially on Mac  OSX (some competitor  methods are not  available on
+this platform) and  almost completelly on Linux (all the  competitor methods are
+available  on   Linux  except   EdgeFoci.   We  provided   pre-computed  results
+separately, available at project web page http://cvlab.epfl.ch/research/tilde)
+
+In order  to avoid detecting  the same  keypoints multiple times,  This software
+USES CACHING BY DEFAULT.  It will  save computed keypoints in sub-folders of the
+dataset folders (detail on the dataset section below). In case you need to reset
+the detected keypoints, be sure to erase the cache files.
+
+We  have  enhanced  the  implementation  for easier  use  since  the  paper  was
+submitted,  and   we  therefore   recommend  to  use   the  results   from  this
+implementation when comparing.  There may be minor differences  with the results
+reported in [1].
+
+
+----
+REQUIREMENTS:
+
+ - MATLAB 2013b or higher (may run on older versions but not tested)
+ - OpenCV 2.4.9 or higher
+ - ImageMagick (for the command 'convert') available both on Mac and Linux
+ 
+ ** Make  sure the  binaries  provided  in <matlab/external/external_codes>  are
+    compiled for your platform. We also  ship pre-compiled binaries for both Mac
+    OSX and  Linux. If you want  to use this,  please run link.m to  have proper
+    soft links pointing to the correct binary file
+
+----
+USAGE:
+
+Try running  the following scripts with  MATLAB (they are located  in matlab/src
+and should be run from this folder).
+
+ - link.m: Automatic linking in case of using pre-compiled binaries.
+
+ - demo.m: Here we provide a demo for using our TILDE detector on Matlab similar
+   	   to the demo made in c++.
+   
+ - evaluate_OxfordEFDataset_2percents.m: Runs  the evaluation  of Oxford  and EF
+   dataset with the new 2% criteria as reported in the paper [1]
+   
+ - evaluate_OxfordEFDataset_1000.m: Runs the evaluation of Oxford and EF dataset
+   with 1000 keypoints and standard overlap measure as reported in the paper [1]
+   
+ - evaluate_WebcamDataset_2percents.m:  Runs the  evaluation of  the new  Webcam
+   dataset with the new 2% criteria as reported in the paper [1]
+
+----
+THE DATASET:
+
+The   dataset   is   available   for   download  at   the   project   web   page
+http://cvlab.epfl.ch/research/tilde. Extract  the archive to the  data directory
+to use the datasets.
+
+ - Webcam Dataset includes the following folders:
+
+   Chamonix, Courbevoie,Frankfurt, Mexico, Panorama, StLouis
+
+ - Oxford and EF Dataset includes the following folders:
+
+   bark, leuven, rushmore, wall, bikes, notredame, yosemite, boat, obama, trees,
+   graf, paintedladies, ubc
+
+For    example,    Chamonix   folder    should    be    located   at    <project
+root>/data/Chamonix. Inside each dataset  folder, the following folder structure
+should exist.
+
+<Sequence Name>
+	  |------ <test>
+		    |------ <image_color>
+		    |------ <image_gray>
+		    |------ <homography>   (only for Oxford and EF)
+		    |------ <features> 	   (automatically generated when running
+		    |	   		    the benchmark software for caching)
+		    |------ test_imgs.txt
+		    |------ homography.txt (only for Oxford and EF)
+
+
+ ** Using pre-computed EdgeFoci results: Simply download and extract the archive
+    in the  data directory. It should  write the pre-computed files  (caches) in
+    the corresponding <features> sub-folders of the datasets.
+
+----
+NOTE ON THE LICENSE OF 3RD PARTY SOFTWARE:
+
+Implementations in the <matlab/external> directory are mostly adaptations of 3rd
+party software into our evaluation framework.  For  the terms of use for the 3rd
+party software, please refer to the license files in <matlab/external/licenses>
+
+
+--------------------------------------------------------------------------------
