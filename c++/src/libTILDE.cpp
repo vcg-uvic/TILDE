@@ -36,6 +36,199 @@
 
 #include "libTILDE.hpp"
 
+
+
+vector < Mat > getLuv_fast(const Mat & input_color_image)
+{
+	if (input_color_image.channels() != 3) {
+		throw std::runtime_error("Need a 3-channnel image");
+	}
+    vector < Mat > luvImage(3);
+	for (int idxC = 0; idxC < 3; ++idxC) {
+		luvImage[idxC].create(input_color_image.rows, input_color_image.cols, CV_32F);
+	}
+
+	//init
+		const float y0=(float) ((6.0/29)*(6.0/29)*(6.0/29));
+		const float a= (float) ((29.0/3)*(29.0/3)*(29.0/3));
+						const double XYZ[3][3] = {  {  0.430574,  0.341550,  0.178325 },   
+				                            {  0.222015,  0.706655,  0.071330 },   
+				                            {  0.020183,  0.129553,  0.939180 }   };  
+
+		const double Un_prime   = 0.197833;   
+		const double Vn_prime   = 0.468331;   
+		const double maxi 		= 1.0/270;  
+		const double minu 		= -88*maxi;
+		const double minv 		= -134*maxi;
+		const double Lt     = 0.008856; 
+		static float lTable[1064]; 
+		for(int i=0; i<1025; i++) 
+		{
+			float y = (float) (i/1024.0);
+			float l = y>y0 ? 116*(float)pow((double)y,1.0/3.0)-16 : y*a;
+			lTable[i] = l*maxi;
+		}
+
+	// Get Max idx using Magnitude
+     cv::parallel_for( cv::BlockedRange (0, input_color_image.rows), [=] (const cv::BlockedRange &r)
+    {
+
+    	Rect roi(0, r.begin(), input_color_image.cols, r.end() - r.begin());
+    	Mat in(input_color_image, roi); 
+
+
+    	Mat out1(luvImage[0],roi);
+    	Mat out2(luvImage[1],roi);
+    	Mat out3(luvImage[2],roi);
+
+
+    	//Rect roi(0, r.begin(), convt_image[idxDim].cols, r.end() - r.begin());
+        for (int j = 0; j < in.rows; j++) 
+		{
+        	for (int i = 0; i < in.cols; i++)//row
+	        {
+				cv::Vec3b rgb = in.at<cv::Vec3b>(j,i);
+				float r = rgb[2] / 255.0f;
+			    float g = rgb[1] / 255.0f;
+			    float b = rgb[0] / 255.0f;
+
+							     //RGB to LUV conversion   
+  
+			    //delcare variables   
+			    double  x, y, z, u_prime, v_prime, constant, L, u, v;   
+			   
+			    //convert RGB to XYZ...   
+			    x       = XYZ[0][0]*r + XYZ[0][1]*g + XYZ[0][2]*b;   
+			    y       = XYZ[1][0]*r + XYZ[1][1]*g + XYZ[1][2]*b;   
+			    z       = XYZ[2][0]*r + XYZ[2][1]*g + XYZ[2][2]*b;   
+			   
+			    //convert XYZ to LUV...   
+			   
+			    //compute ltable(y*1024)
+			    L = lTable[(int)(y*1024)]; 
+			   
+			    //compute u_prime and v_prime   
+			    constant    = 1/(x + 15 * y + 3 * z + 1e-35);   //=z
+
+		        u_prime = (4 * x) * constant;   //4*x*z
+		        v_prime = (9 * y) * constant;   
+
+			   
+			    //compute u* and v*   
+			    u = (float) (13 * L * (u_prime - Un_prime)) - minu;
+			    v = (float) (13 * L * (v_prime - Vn_prime)) - minv;      
+			 
+			    out1.at<float>(j,i) = L*270*2.55; 
+			    out2.at<float>(j,i) = ((u*270-88)+ 134.0)* 255.0 / 354.0; 
+			    out3.at<float>(j,i) = ((v*270-134)+ 140.0)* 255.0 / 256.0;
+
+	        }
+	    }
+
+    });
+
+	return luvImage;
+}
+
+
+vector < Mat > getGrad_fast(const Mat & input_color_image)
+{
+	if (input_color_image.channels() != 3) {
+		throw std::runtime_error("Need a 3-channel image");
+	}
+	//the output
+	vector < Mat > gradImage(3);//,Mat(input_color_image.rows, input_color_image.cols, CV_32F));
+    //return gradImage;
+	vector < Mat > color_channels(3);
+	vector < Mat > gx(3);
+	vector < Mat > gy(3);
+
+	// The derivative5 kernels
+	Mat d1 = (Mat_ < float >(1, 5) << 0.109604, 0.276691, 0.000000, -0.276691, -0.109604);
+	Mat d1T = (Mat_ < float >(5, 1) << 0.109604, 0.276691, 0.000000, -0.276691, -0.109604);
+	Mat p = (Mat_ < float >(1, 5) << 0.037659, 0.249153, 0.426375, 0.249153, 0.037659);
+	Mat pT = (Mat_ < float >(5, 1) << 0.037659, 0.249153, 0.426375, 0.249153, 0.037659);
+
+	// split the channels into each color channel
+	split(input_color_image, color_channels);
+	// // prepare output
+	for (int idxC = 0; idxC < 3; ++idxC) {
+		gradImage[idxC].create(color_channels[0].rows, color_channels[0].cols, CV_32F);
+	}
+
+   
+    
+	//for each channel do the derivative 5 
+	for (int idxC = 0; idxC < 3; ++idxC) 
+	{
+		sepFilter2D(color_channels[idxC], gx[idxC], CV_32F, d1, p, Point(-1, -1), 0,
+			    BORDER_REFLECT);
+		sepFilter2D(color_channels[idxC], gy[idxC], CV_32F, p, d1, Point(-1, -1), 0,
+			    BORDER_REFLECT);
+		// since we do the other direction, just flip signs
+		gx[idxC] = -gx[idxC];
+		gy[idxC] = -gy[idxC];
+
+		// the magnitude image
+		//sqrt(gx[idxC].mul(gx[idxC]) + gy[idxC].mul(gy[idxC]), mag[idxC]);
+	}
+
+	// Get Max idx using Magnitude
+     cv::parallel_for( cv::BlockedRange (0, gx[0].rows), [=] (const cv::BlockedRange &r)
+    {
+    	vector<Mat> inx(3);
+    	Rect roi(0, r.begin(), gx[0].cols, r.end() - r.begin());
+    	inx[0] = Mat(gx[0], roi); 
+    	inx[1] = Mat(gx[1], roi); 
+    	inx[2] = Mat(gx[2], roi); 
+
+    	vector<Mat> iny(3);
+    	iny[0] = Mat(gy[0], roi); 
+    	iny[1] = Mat(gy[1], roi); 
+    	iny[2] = Mat(gy[2], roi); 
+
+
+    	Mat out1(gradImage[0],roi);
+    	Mat out2(gradImage[1],roi);
+    	Mat out3(gradImage[2],roi);
+    	//Rect roi(0, r.begin(), convt_image[idxDim].cols, r.end() - r.begin());
+        for (int j = 0; j < inx[0].rows; j++) 
+		{
+        	for (int i = 0; i < inx[0].cols; i++)//row
+	        {
+	        	float maxVal = -1;float maxValx;float maxValy;
+	        	float val_squared;
+	        	float valx;float valy;
+	        	for (int idxC = 0; idxC < 3; ++idxC) 
+	        	{
+	        		valx = inx[idxC].at < float >(j, i);
+	        		valy = iny[idxC].at < float >(j, i);
+					val_squared = (valx*valx+valy*valy);
+					if (val_squared > maxVal)
+					{
+						maxVal = val_squared ;
+						maxValx = valx;
+						maxValy = valy;		
+					}
+	        	}
+
+	        	out1.at < float >(j, i) = maxValx * 0.5 + 128.0;
+				out2.at < float >(j, i) = maxValy * 0.5 + 128.0;
+				out3.at < float >(j, i) = sqrt(maxVal);
+
+			}
+	    }
+
+    });
+
+	return gradImage;
+}
+
+
+
+
+
+
 // Function which return in Keypoint Structure
 vector < KeyPoint > getTILDEKeyPoints(const Mat & indatav, const string & filter_name, const bool useApprox,
 			      const bool sortMe, const bool keepPositiveScoreOnly, Mat * score)
@@ -68,76 +261,194 @@ vector < KeyPoint > getTILDEKeyPoints(const Mat & indatav, const string & filter
 	return res;
 }
 
-//template <typename T>
-vector < Point3f > applyApproxFilters(const Mat & indatav, const TILDEobjects & tilde_obj,
-				       const vector < float >&param, const bool useDescriptorField,
-				       const bool sortMe, const bool keep_only_positive,
-				       Mat * score)
+vector < KeyPoint > getTILDEKeyPoints_fast(const Mat & indatav, const string & filter_name, const bool sortMe, const bool keepPositiveScoreOnly, Mat * score)
 {
-	float resizeRatio = 1.0;
-	resizeRatio = param[0];
-	if (resizeRatio == 0)
-		throw std::runtime_error("The resize ratio is zero, if you dont want any resize, use 1");
+	const float scaleKeypoint = 10.0;const float orientationKeypoint = 0;
+
+	cv::Mat img = indatav.clone();//we copy the input data here, because we will resize it before filtering
+
+	// Read the txt file to get the filter
+	vector < float > param;
+	TILDEobjects  tilde_obj = getTILDEObject(filter_name, &param,  true, false);
+
+	param[1] = scaleKeypoint;
+	param[2] = orientationKeypoint;
+
+    return applyApproxFilters_fast(img, tilde_obj, param, sortMe, keepPositiveScoreOnly, score);
+}
+
+
+Mat normalizeScore(const Mat& score)
+{
+	Mat output = score.clone();
+		// if (score != NULL) {
+		double minVal, maxVal;
+		minMaxLoc(output, &minVal, &maxVal);
+		double range = maxVal - minVal;
+
+		if (range == 0) 
+			output = (output - minVal);//the score is a constant value, returns zero
+		else
+			output = (output - minVal) / range;
+	
+	return output;
+}
+
+void prepareData(const Mat & indatav,
+				           const float& resizeRatio, 
+				           const bool& useDescriptorField,
+				           vector < Mat > *output)
+{
 
 	Mat indata_resized = indatav;
 	if (resizeRatio != 1)
 		resize(indatav, indata_resized, Size(0, 0), resizeRatio, resizeRatio);
 
-	vector < Mat > convt_image;
+	// vector < Mat > &convt_image = output;
 
 	if (useDescriptorField) {
-		convt_image = getNormalizedDescriptorField(indatav);
+		*output = getNormalizedDescriptorField(indatav);
 	} else {
 
 		vector < Mat > gradImage = getGradImage(indata_resized);
 		vector < Mat > luvImage = getLuvImage(indata_resized);
 
 		//convt_image.clear();
-		copy(gradImage.begin(), gradImage.end(), std::back_inserter(convt_image));
-		copy(luvImage.begin(), luvImage.end(), std::back_inserter(convt_image));
+		copy(gradImage.begin(), gradImage.end(), std::back_inserter(*output));
+		copy(luvImage.begin(), luvImage.end(), std::back_inserter(*output));
 
-		if (convt_image.size() != 6) 
+		if (output->size() != 6) 
 			throw std::runtime_error("Error during creation of the features (LUV+Grad)");
 		
 	}
+}
 
-	vector < vector < Mat > >cascade_responses = getScoresForApprox(tilde_obj, convt_image);
+void prepareData_fast(const Mat & indatav,
+				           const float& resizeRatio, 
+				           const bool& useDescriptorField,
+				           vector < Mat > *output)
+{
+
+	Mat indata_resized = indatav;
+	if (resizeRatio != 1)
+		resize(indatav, indata_resized, Size(0, 0), resizeRatio, resizeRatio);
+
+	// vector < Mat > &convt_image = output;
+
+	if (useDescriptorField) {
+		*output = getNormalizedDescriptorField(indatav);
+	} else {
+
+		vector < Mat > gradImage = getGrad_fast(indata_resized);
+		vector < Mat > luvImage = getLuv_fast(indata_resized);
+
+		// vector < Mat > luvImage2 = getLuvImage(indata_resized);
+		// imshow("luv1",(luvImage[1])/255);
+		// imshow("luv2",(luvImage2[1])/255);
+		// waitKey(0);
+
+		//convt_image.clear();
+		copy(gradImage.begin(), gradImage.end(), std::back_inserter(*output));
+		copy(luvImage.begin(), luvImage.end(), std::back_inserter(*output));
+
+		//*output =  getGrad_LUV_fast(indata_resized);
+
+		if (output->size() != 6) 
+			throw std::runtime_error("Error during creation of the features (LUV+Grad)");
+		
+	}
+}
+
+
+void getCombinedScore(const vector < vector < Mat > >& cascade_responses, const bool &keep_only_positive, Mat *output)
+{
+		for (int idxCascade = 0; idxCascade < cascade_responses.size(); ++idxCascade) 
+		{
+			Mat respImageCascade = cascade_responses[idxCascade][0];
+
+			for (int idxDepth = 1; idxDepth < cascade_responses[idxCascade].size(); ++idxDepth)
+				respImageCascade =
+				    max(respImageCascade, cascade_responses[idxCascade][idxDepth]);
+
+			respImageCascade = idxCascade % 2 == 0 ? -respImageCascade : respImageCascade;
+			if (idxCascade == 0)
+				*output = respImageCascade;
+			else
+				*output = respImageCascade + *output;
+		}
 
 	//post process
 	const float stdv = 2;
 	const int sizeSmooth = 5 * stdv * 2 + 1;
+	GaussianBlur(*output, *output, Size(sizeSmooth, sizeSmooth), stdv, stdv);
+
+	if (keep_only_positive)
+		*output = max(*output, 0);
+
+
+}
+
+//template <typename T>
+vector < KeyPoint > applyApproxFilters_fast(const Mat & indatav, const TILDEobjects & tilde_obj,
+				       const vector < float >&param,
+				       const bool sortMe, const bool keep_only_positive,
+				       Mat * score)
+{
+	const float resizeRatio = param[0];
+	if (resizeRatio == 0)
+		throw std::runtime_error("The resize ratio is zero, if you dont want any resize, use 1");
+
+	const float scaleKeypoint = param[1];
+	const float orientationKeypoint = param[2];
+
+	Mat respImageFinal;
+
+    vector < Mat > convt_image;
+	prepareData_fast(indatav,resizeRatio, false,&convt_image);
+	getScoresandCombine_Approx(tilde_obj, convt_image,keep_only_positive,&respImageFinal);
+
+
+	if (score != NULL)
+		*score = respImageFinal.clone();
+
+
+	// perform non-max suppression
+	vector < KeyPoint > res_with_score = NonMaxSup_resize_format(respImageFinal, resizeRatio, scaleKeypoint, orientationKeypoint); //return x,y,score for each keypoint, such as we can sort them later
+
+	if (sortMe) {
+		std::sort(res_with_score.begin(), res_with_score.end(),
+			  [](const KeyPoint & a, const KeyPoint & b) {
+			  return a.response > b.response;}
+		);
+	}
+
+	return res_with_score;
+}
+
+vector < Point3f > applyApproxFilters(const Mat & indatav, const TILDEobjects & tilde_obj,
+				       const vector < float >&param, const bool useDescriptorField,
+				       const bool sortMe, const bool keep_only_positive,
+				       Mat * score)
+{
+	const float scaleKeypoint = 10.0;const float orientation = 0;
+	float resizeRatio = 1.0;
+	resizeRatio = param[0];
+	if (resizeRatio == 0)
+		throw std::runtime_error("The resize ratio is zero, if you dont want any resize, use 1");
+
+    vector < Mat > convt_image;
+	prepareData(indatav,resizeRatio, useDescriptorField,&convt_image);
+
+	vector < vector < Mat > >cascade_responses = getScoresForApprox(tilde_obj, convt_image);
 
 	// apply the cascade structure and retrieve single channel response image
 	Mat respImageFinal;
-	for (int idxCascade = 0; idxCascade < cascade_responses.size(); ++idxCascade) {
-		Mat respImageCascade = cascade_responses[idxCascade][0];
-		for (int idxDepth = 1; idxDepth < cascade_responses[idxCascade].size(); ++idxDepth)
-			respImageCascade =
-			    max(respImageCascade, cascade_responses[idxCascade][idxDepth]);
 
-		respImageCascade = idxCascade % 2 == 0 ? -respImageCascade : respImageCascade;
-		if (idxCascade == 0)
-			respImageFinal = respImageCascade;
-		else
-			respImageFinal = respImageCascade + respImageFinal;
-	}
+	getCombinedScore(cascade_responses, keep_only_positive, &respImageFinal);
 
-	GaussianBlur(respImageFinal, respImageFinal, Size(sizeSmooth, sizeSmooth), stdv, stdv);
+	if (score != NULL)
+		*score = respImageFinal.clone();
 
-	if (keep_only_positive)
-		respImageFinal = max(respImageFinal, 0);
-
-	if (score != NULL) {
-		double minVal, maxVal;
-		minMaxLoc(respImageFinal, &minVal, &maxVal);
-		double range = maxVal - minVal;
-
-		respImageFinal.copyTo(*score);
-		if (range == 0) 
-			*score = (*score - minVal);//the score is a constant value, returns zero
-		else
-			*score = (*score - minVal) / range;
-	}
 	// perform non-max suppression
 	vector < Point3f > res_with_score = NonMaxSup(respImageFinal); //return x,y,score for each keypoint, such as we can sort them later
 
@@ -149,12 +460,12 @@ vector < Point3f > applyApproxFilters(const Mat & indatav, const TILDEobjects & 
 	}
 	// resize back
 
+// resize back
 	resizeRatio = 1. / resizeRatio;
-	if (resizeRatio != 1)
-		for (int i = 0; i < res_with_score.size(); ++i) {
-			res_with_score[i].x = res_with_score[i].x * resizeRatio;
-			res_with_score[i].y = res_with_score[i].y * resizeRatio;
-		}
+	for (int i = 0; i < res_with_score.size(); ++i) {
+		res_with_score[i].x = res_with_score[i].x * resizeRatio;
+		res_with_score[i].y = res_with_score[i].y * resizeRatio;
+	}
 
 	return res_with_score;
 }
@@ -255,6 +566,74 @@ vector < vector < Mat > >getScoresForApprox(const TILDEobjects & cas,
 	}
 
 	return res;
+}
+
+
+void getScoresandCombine_Approx(const TILDEobjects & cas,
+						       const vector < Mat > &convt_image,
+						       const bool keep_only_positive,
+						       	Mat *output)
+{
+	const vector < float >param = cas.parameters;
+	if (param.size() == 0) {
+		throw std::runtime_error("No parameter loaded !");
+	}
+
+	int nbMax = param[1];	//4
+	int nbSum = param[2];	//4
+	int nbOriginalFilters = nbMax * nbSum;
+	int nbApproximatedFilters = param[3];	//4
+	int nbChannels = param[4];	//6
+	int sizeFilters = param[5];	//21
+	//--------------------
+
+	*output = Mat::zeros(convt_image[0].size(), CV_32F);
+
+	vector < vector < Mat > >res(nbSum,vector < Mat >(nbMax));
+
+	// calculate separable responses
+	int idxSum = 0;
+	int idxMax = 0;
+
+	vector < Mat > curRes((int)cas.filters.size() / 2, Mat::zeros(convt_image[0].size(), CV_32F));	// temp storage
+
+	parallel_for_(Range(0, (int)cas.filters.size() / 2),
+		      Parallel_process(convt_image, nbApproximatedFilters, cas, curRes));
+
+
+		Mat maxVal;
+		int count = 0;
+		for (int idxOrig = 0; idxOrig < nbSum * nbMax; ++idxOrig) 
+		{
+			int idxSum = idxOrig / nbMax;
+			int idxMax = idxOrig % nbMax;
+
+			Mat result = res[idxSum][idxMax];
+			
+			for (int idxFilter = 0; idxFilter < cas.filters.size() / 2; idxFilter++) 
+					result = result + cas.coeffs[idxOrig][idxFilter] * curRes[idxFilter];
+
+			res[idxSum][idxMax] = result + cas.bias[idxMax + idxSum*nbMax];
+
+			 if (idxOrig % nbMax == 0)
+			 	 maxVal = res[idxSum][idxMax];
+			 else
+			 	 maxVal = max(res[idxSum][idxMax],maxVal);
+
+			 if ((idxOrig+1) % nbMax == 0)//the last one
+			 {
+				// sign and sum
+				*output = (idxSum % 2 == 0 ? -maxVal : maxVal) + *output;
+			 }
+	}
+
+	//post process
+	const float stdv = 2;
+	const int sizeSmooth = 5 * stdv * 2 + 1;
+	GaussianBlur(*output, *output, Size(sizeSmooth, sizeSmooth), stdv, stdv);
+
+	if (keep_only_positive)
+		*output = max(*output, 0);
 }
 
 // --------------------------------------------------------------------------------------
@@ -526,6 +905,9 @@ Mat sumMatArray(const vector < Mat > &MatArray)
 	return res;
 }
 
+
+
+
 vector < Mat > getGradImage(const Mat & input_color_image)
 {
 	if (input_color_image.channels() != 3) {
@@ -550,6 +932,7 @@ vector < Mat > getGradImage(const Mat & input_color_image)
 	for (int idxC = 0; idxC < 3; ++idxC) {
 		gradImage[idxC].create(color_channels[0].rows, color_channels[0].cols, CV_32F);
 	}
+	//	return gradImage;
 
 	// for each channel do the derivative 5 
 	for (int idxC = 0; idxC < 3; ++idxC) {
@@ -601,6 +984,7 @@ vector < Mat > getGradImage(const Mat & input_color_image)
 
 	return gradImage;
 }
+
 
 vector < Mat > getLuvImage(const Mat & input_color_image)
 {

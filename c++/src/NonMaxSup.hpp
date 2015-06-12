@@ -49,6 +49,8 @@ using namespace std;
 using namespace cv;
 
 vector<Point3f> NonMaxSup(const Mat & response);
+vector<KeyPoint> NonMaxSup_resize_format(const Mat &response, const float& resizeRatio, const float &scaleKeypoint, const float & orientationKeypoint);
+
 
 
 #endif // _NON_MAX_SUP_HPP_

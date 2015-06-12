@@ -87,6 +87,37 @@ vector<KeyPoint> testAndDump(const Mat &I,const string &pathFilter, const int &n
 	return res;	
 }
 
+vector<KeyPoint> test_fast(const Mat &I,const string &pathFilter, const int &nbTest = 1, Mat* score = NULL)
+{
+	using namespace std::chrono;
+	using namespace cv;
+ 	high_resolution_clock::time_point t1, t2;
+ 	std::vector<KeyPoint> kps;
+ 	double time_spent = 0;
+
+
+
+	// Run multiple times to measure average runtime
+	for (int i =0;i<nbTest;i++)
+	{
+		t1 = high_resolution_clock::now();
+		// Run TILDE
+	    kps = getTILDEKeyPoints_fast(I, pathFilter,true,false,score);
+		t2 = high_resolution_clock::now();
+
+		time_spent += duration_cast<duration<double>>(t2 - t1).count();
+	}
+	// Display execution time
+	cout<<"Time all: "<<time_spent/nbTest<<" s"<<endl;
+
+
+	std::vector<KeyPoint> res;
+	//keep only the 100 best
+	std::copy(kps.begin(),kps.begin()+min<int>(kps.size(),500),back_inserter(res));	
+
+	return res;	
+}
+
 int main(int argc,char** argv)
 {
 	using namespace std::chrono;
@@ -122,7 +153,20 @@ int main(int argc,char** argv)
 		Mat ImgKps2;
 		drawKeypoints(I, kps2, ImgKps2);
 		cv::imshow("keypoints with approximation",ImgKps2);
-		cv::imshow("image with approximation",score2);
+		cv::imshow("image with approximation",normalizeScore(score2));
+
+
+
+
+		cout<<"Process Image with approximation (Mexico filter) fast:"<<endl;
+		// Path to the TILDE approx filter
+		pathFilter = "../filters/Mexico24.txt";
+		Mat score3 = Mat::zeros(I.rows,I.cols,CV_32F);
+		vector<KeyPoint> kps3 = test_fast(I,pathFilter,1, &score3);
+		Mat ImgKps3;
+		drawKeypoints(I, kps3, ImgKps3);
+		cv::imshow("keypoints with approximation fast",ImgKps3);
+		cv::imshow("image with approximation fast",normalizeScore(score3));
 
 
 		cout<<"press a key to exit"<<endl;

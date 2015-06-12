@@ -64,5 +64,33 @@ NonMaxSup(const Mat & response)
     return res;
 }
 
+vector<KeyPoint> NonMaxSup_resize_format(const Mat &response, const float& resizeRatio, const float &scaleKeypoint, const float & orientationKeypoint)
+{
+    // stupid non-max suppression without any fancy tricks
+    vector<KeyPoint> res;
+    for(int i=1; i<response.rows-1; ++i){
+        for(int j=1; j<response.cols-1; ++j)
+        {
+            bool bMax = true;
+            const float val = response.at<float>(i,j);
+            for(int ii=-1; ii <= +1; ++ii)
+            for(int jj=-1; jj <= +1; ++jj){
+                if(ii==0 && jj==0)
+                    continue;
+                bMax &= val > response.at<float>(i+ii,j+jj);
+            }
+
+            if (bMax)
+            {
+                res.push_back(KeyPoint(Point2f(j * resizeRatio, i * resizeRatio), scaleKeypoint,orientationKeypoint,val));
+            }
+
+        }            
+    }
+
+    return res;
+}
+
+
 
 // NonMaxSup.cpp ends here

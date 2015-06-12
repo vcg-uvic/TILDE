@@ -83,7 +83,6 @@ public:
 
 	vector < Mat > w;	//for each channel
 	float b;
-
 };
 
 // Class structure for TILDE objects
@@ -102,7 +101,7 @@ public:
 	bool isApprox;
 	bool useDescriptorField;
 	string name;
-
+	
 };
 
 
@@ -117,6 +116,14 @@ vector < KeyPoint > getTILDEKeyPoints(
 	const bool keepPositiveScoreOnly = false,
 	Mat * score = NULL);
 
+vector < KeyPoint > getTILDEKeyPoints_fast(
+	const Mat & indatav,
+	const string & nameFilter,
+	const bool sortMe = false,
+	const bool keepPositiveScoreOnly = false,
+	Mat * score = NULL);
+
+Mat normalizeScore(const Mat& score);
 //--------------------------------------------------------------------------------------
 // For approximated TILDE
 
@@ -135,11 +142,24 @@ vector < Point3f > applyApproxFilters(
 	const bool keep_only_positive,
 	Mat * score);
 
+// Apply and get TILDE keypoints in < x, y, score > format
+vector < KeyPoint > applyApproxFilters_fast(
+	const Mat & p,
+	const TILDEobjects & why,
+	const vector < float >&param,
+	const bool sortMe,
+	const bool keep_only_positive,
+	Mat * score);
+
 // Apply and get TILDE score map
 vector < vector < Mat > >getScoresForApprox(
 	const TILDEobjects & cas,
 	const vector < Mat > &convt_image);
 
+void getScoresandCombine_Approx(const TILDEobjects & cas,
+						       const vector < Mat > &convt_image,
+						       const bool keep_only_positive,
+						       	Mat *output);
 
 //--------------------------------------------------------------------------------------
 // For Non approximated TILDE
