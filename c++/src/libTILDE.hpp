@@ -49,7 +49,7 @@
 #include <opencv/cv.h>  	//for parallel_opencv
 
 #include "NonMaxSup.hpp"
-#include "rgbConvertMex.hpp"
+
 
 using namespace std;
 using namespace cv;
