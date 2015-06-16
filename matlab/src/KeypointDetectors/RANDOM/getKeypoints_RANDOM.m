@@ -1,3 +1,40 @@
+%% getKeypoints_RANDOM.m --- 
+% 
+% Filename: getKeypoints_RANDOM.m
+% Description: 
+% Author: Kwang Moo Yi, Yannick Verdie
+% Maintainer: Kwang Moo Yi, Yannick Verdie
+% Created: Tue Jun 16 17:18:28 2015 (+0200)
+% Version: 
+% Package-Requires: ()
+% Last-Updated: Tue Jun 16 17:18:33 2015 (+0200)
+%           By: Kwang
+%     Update #: 1
+% URL: 
+% Doc URL: 
+% Keywords: 
+% Compatibility: 
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%% Commentary: 
+% 
+% 
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%% Change Log:
+% 
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+% Copyright (C), EPFL Computer Vision Lab.
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%% Code:
+
+
 function [keypts] = getKeypoints_RANDOM(img_info, p)
 
     fixed_scale = 1;%half of the filter size
@@ -17,3 +54,5 @@ function [keypts] = getKeypoints_RANDOM(img_info, p)
     keypts = mergeScoreImg2Keypoints(keypts, score_res);
 
 end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% getKeypoints_RANDOM.m ends here

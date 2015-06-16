@@ -1,3 +1,40 @@
+%% sortFeaturesSS_noAbs.m --- 
+% 
+% Filename: sortFeaturesSS_noAbs.m
+% Description: 
+% Author: Yannick Verdie, Kwang Moo Yi
+% Maintainer: Yannick Verdie, Kwang Moo Yi
+% Created: Tue Jun 16 17:14:58 2015 (+0200)
+% Version: 
+% Package-Requires: ()
+% Last-Updated: Tue Jun 16 17:15:02 2015 (+0200)
+%           By: Kwang
+%     Update #: 1
+% URL: 
+% Doc URL: 
+% Keywords: 
+% Compatibility: 
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%% Commentary: 
+% 
+% 
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%% Change Log:
+% 
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+% Copyright (C), EPFL Computer Vision Lab.
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%% Code:
+
+
 function [feat] = sortFeaturesSS_noAbs(features,  p, sortOnScale)
 
 if ~exist('sortOnScale','var')
@@ -44,3 +81,5 @@ end
         
     end
 end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% sortFeaturesSS_noAbs.m ends here

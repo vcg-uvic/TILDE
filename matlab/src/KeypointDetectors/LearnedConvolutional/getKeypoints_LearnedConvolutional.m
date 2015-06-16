@@ -1,3 +1,41 @@
+%% getKeypoints_LearnedConvolutional.m --- 
+% 
+% Filename: getKeypoints_LearnedConvolutional.m
+% Description: 
+% Author: Kwang Moo Yi, Yannick Verdie
+% Maintainer: Kwang Moo Yi, Yannick Verdie
+% Created: Tue Jun 16 17:17:08 2015 (+0200)
+% Version: 
+% Package-Requires: ()
+% Last-Updated: Tue Jun 16 17:18:04 2015 (+0200)
+%           By: Kwang
+%     Update #: 1
+% URL: 
+% Doc URL: 
+% Keywords: 
+% Compatibility: 
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%% Commentary: 
+% 
+% 
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%% Change Log:
+% 
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+% Learned Convolutial Filters code using the coeeficients from the
+% authors' website. See related copyright issues.
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%% Code:
+
+
 function [keypts] = getKeypoints_LearnedConvolutional(img_info, p)
 
      fixed_scale = 4;%half of the filter size
@@ -41,3 +79,6 @@ function [keypts] = getKeypoints_LearnedConvolutional(img_info, p)
     end
 
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% getKeypoints_LearnedConvolutional.m ends here

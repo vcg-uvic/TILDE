@@ -1,3 +1,36 @@
+%% getKeypoints_MSER.m --- 
+% 
+% Filename: getKeypoints_MSER.m
+% Description: Wrapper function for MSER
+% Author: Kwang Moo Yi, Yannick Verdie
+% Maintainer: Kwang Moo Yi, Yannick Verdie
+% Created: Tue Jun 16 17:18:09 2015 (+0200)
+% Version: 
+% Package-Requires: ()
+% Last-Updated: Tue Jun 16 17:19:52 2015 (+0200)
+%           By: Kwang
+%     Update #: 2
+% URL: 
+% Doc URL: 
+% Keywords: 
+% Compatibility: 
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%% Commentary: 
+% 
+% 
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%% Change Log:
+% 
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%% Code:
+
+
 function [keypts] = getKeypoints_MSER(img_info, p)
 
     mser_name = [img_info.full_feature_prefix '_MSER_keypoints.mat'];
@@ -53,3 +86,5 @@ function [keypts] = getKeypoints_MSER(img_info, p)
         keypts = loadkey.keypts;
     end
 end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% getKeypoints_MSER.m ends here

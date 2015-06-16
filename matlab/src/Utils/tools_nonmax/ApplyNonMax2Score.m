@@ -1,3 +1,40 @@
+%% ApplyNonMax2Score.m --- 
+% 
+% Filename: ApplyNonMax2Score.m
+% Description: 
+% Author: Kwang Moo Yi, Yannick Verdie
+% Maintainer: Kwang Moo Yi, Yannick Verdie
+% Created: Tue Jun 16 17:15:56 2015 (+0200)
+% Version: 
+% Package-Requires: ()
+% Last-Updated: Tue Jun 16 17:16:02 2015 (+0200)
+%           By: Kwang
+%     Update #: 1
+% URL: 
+% Doc URL: 
+% Keywords: 
+% Compatibility: 
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%% Commentary: 
+% 
+% 
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%% Change Log:
+% 
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+% Copyright (C), EPFL Computer Vision Lab.
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%% Code:
+
+
 function [score_img, binary_img] = ApplyNonMax2Score(score_img, param, bDoSimpleNonMax)
     
     if ~exist('param','var')
@@ -101,3 +138,5 @@ function [score_img, binary_img] = ApplyNonMax2Score(score_img, param, bDoSimple
 
     
 end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% ApplyNonMax2Score.m ends here

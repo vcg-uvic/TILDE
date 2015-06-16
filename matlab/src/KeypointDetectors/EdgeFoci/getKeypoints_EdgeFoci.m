@@ -1,3 +1,36 @@
+%% getKeypoints_EdgeFoci.m --- 
+% 
+% Filename: getKeypoints_EdgeFoci.m
+% Description: Wrapper Function for EdgeFoci
+% Author: Kwang Moo Yi, Yannick Verdie
+% Maintainer: Kwang Moo Yi, Yannick Verdie
+% Created: Tue Jun 16 17:16:41 2015 (+0200)
+% Version: 
+% Package-Requires: ()
+% Last-Updated: Tue Jun 16 17:19:23 2015 (+0200)
+%           By: Kwang
+%     Update #: 2
+% URL: 
+% Doc URL: 
+% Keywords: 
+% Compatibility: 
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%% Commentary: 
+% 
+% 
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%% Change Log:
+% 
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%% Code:
+
+
 function [keypts] = getKeypoints_EdgeFoci(img_info, p)
 
     edgefoci_name = [img_info.full_feature_prefix '_EdgeFoci_keypoints.mat'];
@@ -40,3 +73,6 @@ function [keypts] = getKeypoints_EdgeFoci(img_info, p)
         keypts = loadkey.keypts;
     end
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% getKeypoints_EdgeFoci.m ends here

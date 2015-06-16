@@ -1,3 +1,40 @@
+%% evaluate.m --- 
+% 
+% Filename: evaluate.m
+% Description: 
+% Author: Yannick Verdie, Kwang Moo Yi
+% Maintainer: Yannick Verdie, Kwang Moo Yi
+% Created: Tue Jun 16 17:14:18 2015 (+0200)
+% Version: 
+% Package-Requires: ()
+% Last-Updated: Tue Jun 16 17:14:23 2015 (+0200)
+%           By: Kwang
+%     Update #: 1
+% URL: 
+% Doc URL: 
+% Keywords: 
+% Compatibility: 
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%% Commentary: 
+% 
+% 
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%% Change Log:
+% 
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+% Copyright (C), EPFL Computer Vision Lab.
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%% Code:
+
+
 function [AUC] = evaluate(features, pb, imgs,Hs)
 
 if ~exist('Hs', 'var')
@@ -37,3 +74,6 @@ end
      end
     AUC = mean(cell2mat(score),2);
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% evaluate.m ends here

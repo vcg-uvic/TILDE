@@ -7,9 +7,9 @@
 // Created: Tue Mar  3 17:53:46 2015 (+0100)
 // Version: 0.5a
 // Package-Requires: ()
-// Last-Updated: Thu May 28 13:18:32 2015 (+0200)
+// Last-Updated: Tue Jun 16 17:25:55 2015 (+0200)
 //           By: Kwang
-//     Update #: 40
+//     Update #: 41
 // URL: 
 // Doc URL: 
 // Keywords: 
@@ -67,8 +67,9 @@ vector < Mat > getLuv_fast(const Mat & input_color_image)
 		const double Lt     = 0.008856; 
 
 
-		//addapted from Dollar toolbox
-		//http://vision.ucsd.edu/~pdollar/toolbox/doc/
+		// adapted from Dollar toolbox
+		// http://vision.ucsd.edu/~pdollar/toolbox/doc/
+		// See c++/src/3rdParties/license_dollarToolBox.txt
 		static float lTable[1064]; 
 		for(int i=0; i<1025; i++) 
 		{

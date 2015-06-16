@@ -1,3 +1,40 @@
+%% computeKP.m --- 
+% 
+% Filename: computeKP.m
+% Description: 
+% Author: Yannick Verdie, Kwang Moo Yi
+% Maintainer: Yannick Verdie, Kwang Moo Yi
+% Created: Tue Jun 16 17:13:09 2015 (+0200)
+% Version: 
+% Package-Requires: ()
+% Last-Updated: Tue Jun 16 17:13:36 2015 (+0200)
+%           By: Kwang
+%     Update #: 1
+% URL: 
+% Doc URL: 
+% Keywords: 
+% Compatibility: 
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%% Commentary: 
+% 
+% 
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%% Change Log:
+% 
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+% Copyright (C), EPFL Computer Vision Lab.
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%% Code:
+
+
 function Allrepeatability = computeKP(parameters)
 
     nameDataset = parameters.nameDataset;%for saving at the end
@@ -76,3 +113,5 @@ function Allrepeatability = computeKP(parameters)
     
     save(['results_' nameDataset '_' num2str(numberOfKeypoints{1})]);
 end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% computeKP.m ends here

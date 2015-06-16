@@ -1,3 +1,40 @@
+%% ApplyAdaptiveNonMax.m --- 
+% 
+% Filename: ApplyAdaptiveNonMax.m
+% Description: 
+% Author: Yannick Verdie, Kwang Moo Yi
+% Maintainer: Yannick Verdie, Kwang Moo Yi
+% Created: Tue Jun 16 17:15:42 2015 (+0200)
+% Version: 
+% Package-Requires: ()
+% Last-Updated: Tue Jun 16 17:15:46 2015 (+0200)
+%           By: Kwang
+%     Update #: 1
+% URL: 
+% Doc URL: 
+% Keywords: 
+% Compatibility: 
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%% Commentary: 
+% 
+% 
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%% Change Log:
+% 
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+% Copyright (C), EPFL Computer Vision Lab.
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%% Code:
+
+
 function [ binary_img ] = ApplyAdaptiveNonMax( score_img, binary_img, nbPoints )
 %ApplyAdaptiveNonMax Apply Adaptive Nonmax
 %   Detailed explanation goes here
@@ -15,3 +52,6 @@ end
 
 end
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% ApplyAdaptiveNonMax.m ends here
