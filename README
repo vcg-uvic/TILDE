@@ -147,7 +147,8 @@ REQUIREMENTS:
  - MATLAB 2013b or higher (may run on older versions but not tested)
  - OpenCV 2.4.9 or higher
  - ImageMagick (for the command 'convert') available both on Mac and Linux
- 
+ - Pkg-config
+
  ** Make  sure the  binaries  provided  in <matlab/external/external_codes>  are
     compiled for your platform. We also  ship pre-compiled binaries for both Mac
     OSX and  Linux. If you want  to use this,  please run link.m to  have proper
