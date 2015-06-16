@@ -20,7 +20,7 @@ endif()
 
 
 set(SRCS src/libTILDE.cpp src/NonMaxSup.cpp)
-set(DEMOSRC src/demo.cpp)
+set(DEMOSRC demo.cpp)
 set(DEMOEXE demo)
 
 
