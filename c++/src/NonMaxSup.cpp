@@ -68,22 +68,33 @@ vector<KeyPoint> NonMaxSup_resize_format(const Mat &response, const float& resiz
 {
     // stupid non-max suppression without any fancy tricks
     vector<KeyPoint> res;
-    for(int i=1; i<response.rows-1; ++i){
+    for(int i=1; i<response.rows-1; ++i)
+    {
+        const float* pixelinprev = response.ptr<float>(i-1); //previous line
+        const float* pixelin = response.ptr<float>(i); //current line
+        const float* pixelinnext = response.ptr<float>(i+1); //next line
+
         for(int j=1; j<response.cols-1; ++j)
         {
             bool bMax = true;
-            const float val = response.at<float>(i,j);
-            for(int ii=-1; ii <= +1; ++ii)
-            for(int jj=-1; jj <= +1; ++jj){
-                if(ii==0 && jj==0)
-                    continue;
-                bMax &= val > response.at<float>(i+ii,j+jj);
+            const float val = *pixelin;//response.at<float>(i,j);
+
+            //for(int ii=-1; ii <= +1; ++ii)
+            for(int jj=-1; jj <= +1 && bMax; ++jj)
+            {
+                if (*(pixelinprev+jj) >= val) bMax = false;
+                if (*(pixelin+jj) >= val && jj != 0) bMax = false;
+                if (*(pixelinnext+jj) >= val) bMax = false;
             }
 
             if (bMax)
             {
                 res.push_back(KeyPoint(Point2f(j * resizeRatio, i * resizeRatio), scaleKeypoint,orientationKeypoint,val));
             }
+
+            pixelin++;//next
+            pixelinnext++;//next
+            pixelinprev++;//next
 
         }            
     }
