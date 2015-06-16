@@ -36,12 +36,16 @@
 
 #include "libTILDE.hpp"
 
-
+// #ifdef __ANDROID__
+// inline float stof(const string& f){return atof(f.c_str()); };
+// inline int stoi(const string& f){return atoi(f.c_str()); };
+// #endif
 
 vector < Mat > getLuv_fast(const Mat & input_color_image)
 {
-	if (input_color_image.channels() != 3) {
-		throw std::runtime_error("Need a 3-channnel image");
+	if (input_color_image.channels() != 3)
+	{
+		LOGE("Need a 3-channnel image");
 	}
     vector < Mat > luvImage(3);
 	for (int idxC = 0; idxC < 3; ++idxC) {
@@ -61,6 +65,10 @@ vector < Mat > getLuv_fast(const Mat & input_color_image)
 		const double minu 		= -88*maxi;
 		const double minv 		= -134*maxi;
 		const double Lt     = 0.008856; 
+
+
+		//addapted from Dollar toolbox
+		//http://vision.ucsd.edu/~pdollar/toolbox/doc/
 		static float lTable[1064]; 
 		for(int i=0; i<1025; i++) 
 		{
@@ -144,33 +152,46 @@ vector < Mat > getLuv_fast(const Mat & input_color_image)
 
 vector < Mat > getGrad_fast(const Mat & input_color_image)
 {
-	if (input_color_image.channels() != 3) {
-		throw std::runtime_error("Need a 3-channel image");
-	}
-	//the output
-	vector < Mat > gradImage(3);//,Mat(input_color_image.rows, input_color_image.cols, CV_32F));
-    //return gradImage;
-	vector < Mat > color_channels(3);
-	vector < Mat > gx(3);
-	vector < Mat > gy(3);
+   // The derivative5 kernels
+    Mat d1 = (Mat_ < float >(1, 5) << 0.109604, 0.276691, 0.000000, -0.276691, -0.109604);
+    Mat d1T = (Mat_ < float >(5, 1) << 0.109604, 0.276691, 0.000000, -0.276691, -0.109604);
+    Mat p = (Mat_ < float >(1, 5) << 0.037659, 0.249153, 0.426375, 0.249153, 0.037659);
+    Mat pT = (Mat_ < float >(5, 1) << 0.037659, 0.249153, 0.426375, 0.249153, 0.037659);
 
-	// The derivative5 kernels
-	Mat d1 = (Mat_ < float >(1, 5) << 0.109604, 0.276691, 0.000000, -0.276691, -0.109604);
-	Mat d1T = (Mat_ < float >(5, 1) << 0.109604, 0.276691, 0.000000, -0.276691, -0.109604);
-	Mat p = (Mat_ < float >(1, 5) << 0.037659, 0.249153, 0.426375, 0.249153, 0.037659);
-	Mat pT = (Mat_ < float >(5, 1) << 0.037659, 0.249153, 0.426375, 0.249153, 0.037659);
 
-	// split the channels into each color channel
-	split(input_color_image, color_channels);
-	// // prepare output
-	for (int idxC = 0; idxC < 3; ++idxC) {
-		gradImage[idxC].create(color_channels[0].rows, color_channels[0].cols, CV_32F);
-	}
 
-   
-    
+
+    const int nbChannels = input_color_image.channels();
+
+    //temp storage...
+    vector < Mat > color_channels(nbChannels);
+    vector < Mat > gx(nbChannels);
+    vector < Mat > gy(nbChannels);
+
+    //the output
+    vector < Mat > gradImage(3);//,Mat(input_color_image.rows, input_color_image.cols, CV_32F));
+
+
+   // // prepare output
+     for (int idxC = 0; idxC < 3; ++idxC) {
+         gradImage[idxC].create(input_color_image.rows, input_color_image.cols, CV_32F);
+     }
+
+
+
+	if (nbChannels == 1)
+	{
+	    color_channels[0] = input_color_image;
+	}else{
+	    if (nbChannels != 3)
+        	LOGE("Need 1 or 3-channel image");
+
+        // split the channels into each color channel
+        split(input_color_image, color_channels);
+    }
+
 	//for each channel do the derivative 5 
-	for (int idxC = 0; idxC < 3; ++idxC) 
+	for (int idxC = 0; idxC < nbChannels; ++idxC)
 	{
 		sepFilter2D(color_channels[idxC], gx[idxC], CV_32F, d1, p, Point(-1, -1), 0,
 			    BORDER_REFLECT);
@@ -184,19 +205,16 @@ vector < Mat > getGrad_fast(const Mat & input_color_image)
 		//sqrt(gx[idxC].mul(gx[idxC]) + gy[idxC].mul(gy[idxC]), mag[idxC]);
 	}
 
-	// Get Max idx using Magnitude
-     cv::parallel_for( cv::BlockedRange (0, gx[0].rows), [=] (const cv::BlockedRange &r)
+    cv::parallel_for( cv::BlockedRange (0, input_color_image.rows), [=] (const cv::BlockedRange &r)
     {
-    	vector<Mat> inx(3);
-    	Rect roi(0, r.begin(), gx[0].cols, r.end() - r.begin());
-    	inx[0] = Mat(gx[0], roi); 
-    	inx[1] = Mat(gx[1], roi); 
-    	inx[2] = Mat(gx[2], roi); 
+        Rect roi(0, r.begin(), input_color_image.cols, r.end() - r.begin());
+        vector<Mat> inx( nbChannels);vector<Mat> iny( nbChannels);
 
-    	vector<Mat> iny(3);
-    	iny[0] = Mat(gy[0], roi); 
-    	iny[1] = Mat(gy[1], roi); 
-    	iny[2] = Mat(gy[2], roi); 
+    	for (int idxC = 0; idxC < nbChannels; ++idxC)
+        {
+    	    inx[idxC] = Mat(gx[idxC], roi);
+    	    iny[idxC] = Mat(gy[idxC], roi);
+        }
 
 
     	Mat out1(gradImage[0],roi);
@@ -205,9 +223,8 @@ vector < Mat > getGrad_fast(const Mat & input_color_image)
     	//Rect roi(0, r.begin(), convt_image[idxDim].cols, r.end() - r.begin());
         for (int i = 0; i < inx[0].rows; i++) 
 		{
-
-			float* pixelin1[3];float* pixelin2[3];
-			for (int idxC = 0; idxC < 3; ++idxC) 
+			float* pixelin1[nbChannels];float* pixelin2[nbChannels];
+			for (int idxC = 0; idxC < nbChannels; ++idxC)
 			{
 				pixelin1[idxC] = inx[idxC].ptr<float>(i);  // point to first color in row
 				pixelin2[idxC] = iny[idxC].ptr<float>(i);  // point to first color in row
@@ -221,7 +238,7 @@ vector < Mat > getGrad_fast(const Mat & input_color_image)
 	        	float maxVal = -1;float maxValx;float maxValy;
 	        	float val_squared;
 	        	float valx;float valy;
-	        	for (int idxC = 0; idxC < 3; ++idxC) 
+	        	for (int idxC = 0; idxC < nbChannels; ++idxC)
 	        	{
 	        		valx = *pixelin1[idxC]++;//inx[idxC].at < float >(i, j);
 	        		valy = *pixelin2[idxC]++;//iny[idxC].at < float >(i, j);
@@ -245,7 +262,8 @@ vector < Mat > getGrad_fast(const Mat & input_color_image)
 			}
 	    }
 
-    });
+    }
+    );
 
 	return gradImage;
 }
@@ -343,7 +361,7 @@ void prepareData(const Mat & indatav,
 		copy(luvImage.begin(), luvImage.end(), std::back_inserter(*output));
 
 		if (output->size() != 6) 
-			throw std::runtime_error("Error during creation of the features (LUV+Grad)");
+			LOGE("Error during creation of the features (LUV+Grad)");
 		
 	}
 }
@@ -357,29 +375,24 @@ void prepareData_fast(const Mat & indatav,
 	Mat indata_resized = indatav;
 	if (resizeRatio != 1)
 		resize(indatav, indata_resized, Size(0, 0), resizeRatio, resizeRatio);
-
 	// vector < Mat > &convt_image = output;
 
 	if (useDescriptorField) {
 		*output = getNormalizedDescriptorField(indatav);
 	} else {
-
 		vector < Mat > gradImage = getGrad_fast(indata_resized);
-		vector < Mat > luvImage = getLuv_fast(indata_resized);
-
-		// vector < Mat > luvImage2 = getLuvImage(indata_resized);
-		// imshow("luv1",(luvImage[1])/255);
-		// imshow("luv2",(luvImage2[1])/255);
-		// waitKey(0);
-
-		//convt_image.clear();
 		copy(gradImage.begin(), gradImage.end(), std::back_inserter(*output));
-		copy(luvImage.begin(), luvImage.end(), std::back_inserter(*output));
 
-		//*output =  getGrad_LUV_fast(indata_resized);
+		if (indata_resized.channels() == 1)
+		    output->push_back(indata_resized);
+		else
+		{
+		    vector < Mat > luvImage = getLuv_fast(indata_resized);
+		    copy(luvImage.begin(), luvImage.end(), std::back_inserter(*output));
+		}
 
-		if (output->size() != 6) 
-			throw std::runtime_error("Error during creation of the features (LUV+Grad)");
+//		if (output->size() != 6)
+//			LOGE("Error during creation of the features (LUV+Grad)");
 		
 	}
 }
@@ -421,7 +434,7 @@ vector < KeyPoint > applyApproxFilters_fast(const Mat & indatav, const TILDEobje
 {
 	const float resizeRatio = param[0];
 	if (resizeRatio == 0)
-		throw std::runtime_error("The resize ratio is zero, if you dont want any resize, use 1");
+		 LOGE("The resize ratio is zero, if you dont want any resize, use 1");
 
 	const float scaleKeypoint = param[1];
 	const float orientationKeypoint = param[2];
@@ -429,7 +442,9 @@ vector < KeyPoint > applyApproxFilters_fast(const Mat & indatav, const TILDEobje
 	Mat respImageFinal;
 
     vector < Mat > convt_image;
+    //LOGD("data prepare started");
 	prepareData_fast(indatav,resizeRatio, false,&convt_image);
+    //LOGD("data prepared");
 	getScoresandCombine_Approx(tilde_obj, convt_image,keep_only_positive,&respImageFinal);
 
 
@@ -459,7 +474,7 @@ vector < Point3f > applyApproxFilters(const Mat & indatav, const TILDEobjects & 
 	float resizeRatio = 1.0;
 	resizeRatio = param[0];
 	if (resizeRatio == 0)
-		throw std::runtime_error("The resize ratio is zero, if you dont want any resize, use 1");
+		LOGE("The resize ratio is zero, if you dont want any resize, use 1");
 
     vector < Mat > convt_image;
 	prepareData(indatav,resizeRatio, useDescriptorField,&convt_image);
@@ -535,7 +550,7 @@ vector < vector < Mat > >getScoresForApprox(const TILDEobjects & cas,
 {
 	const vector < float >param = cas.parameters;
 	if (param.size() == 0) {
-		throw std::runtime_error("No parameter loaded !");
+		LOGE("No parameter loaded !");
 	}
 
 	vector < vector < Mat > >res;
@@ -601,7 +616,7 @@ void getScoresandCombine_Approx(const TILDEobjects & cas,
 {
 	const vector < float >param = cas.parameters;
 	if (param.size() == 0) {
-		throw std::runtime_error("No parameter loaded !");
+		LOGE("No parameter loaded !");
 	}
 
 	int nbMax = param[1];	//4
@@ -672,7 +687,7 @@ vector < vector < lfilter > >getTILDENonApproxFilters(const string & name, void 
 	std::ifstream fic(name, ios::in);
 	bool isOpen = fic.is_open();
 	if (!isOpen) {
-		throw std::runtime_error("Cannot open filters");
+		LOGE("Cannot open filters");
 	}
 
 	std::string lineread;
@@ -685,19 +700,19 @@ vector < vector < lfilter > >getTILDENonApproxFilters(const string & name, void 
 
 	if (param != NULL)
 		for (int i = 0; i < tokens.size(); i++)
-			param->push_back(std::stof(delSpaces(tokens[i])));
+			param->push_back(stof(delSpaces(tokens[i])));
 
 	//start processing...
 	getline(fic, lineread);
 	tokens.clear();
 	Tokenize(lineread, tokens);
 	if (tokens.size() < 2) {
-		throw std::runtime_error("Wrong formating for the filters");
+		 LOGE("Wrong formating for the filters");
 	}
 
-	int nbFilters = std::stoi(delSpaces(tokens[0]));
-	int nbChannels = std::stoi(delSpaces(tokens[1]));
-	int sizeFilters = std::stoi(delSpaces(tokens[2]));
+	int nbFilters = stoi(delSpaces(tokens[0]));
+	int nbChannels = stoi(delSpaces(tokens[1]));
+	int sizeFilters = stoi(delSpaces(tokens[2]));
 	int row = 0;
 
 	Mat M(sizeFilters, sizeFilters, CV_32FC1);
@@ -711,7 +726,7 @@ vector < vector < lfilter > >getTILDENonApproxFilters(const string & name, void 
 		Tokenize(lineread, tokens);
 
 		for (int i = 0; i < sizeFilters; i++)
-			M.at < float >(row, i) = std::stof(delSpaces(tokens[i]));
+			M.at < float >(row, i) = stof(delSpaces(tokens[i]));
 
 		if (row == sizeFilters - 1) {
 			myfilter.push_back(M);
@@ -728,7 +743,7 @@ vector < vector < lfilter > >getTILDENonApproxFilters(const string & name, void 
 			tokens.clear();
 			Tokenize(lineread, tokens);
 
-			myfilter.b = std::stof(delSpaces(tokens[0]));
+			myfilter.b = stof(delSpaces(tokens[0]));
 
 			myCascade.push_back(myfilter);
 
@@ -749,12 +764,12 @@ vector < vector < lfilter > >getTILDENonApproxFilters(const string & name, void 
 			tokens.clear();
 			Tokenize(lineread, tokens);
 			if (tokens.size() < 2) {
-				throw std::runtime_error("Wrong formating for the filters");
+				 LOGE("Wrong formating for the filters");
 			}
 
-			nbFilters = std::stoi(delSpaces(tokens[0]));
-			nbChannels = std::stoi(delSpaces(tokens[1]));
-			sizeFilters = std::stoi(delSpaces(tokens[2]));
+			nbFilters = stoi(delSpaces(tokens[0]));
+			nbChannels = stoi(delSpaces(tokens[1]));
+			sizeFilters = stoi(delSpaces(tokens[2]));
 			//--done
 
 			//init
@@ -780,7 +795,7 @@ vector < Point3f > applyNonApproxFilters(const Mat & indatav,
 		resizeRatio = param[0];
 
 	if (resizeRatio == 0)
-		throw std::runtime_error("The resize ratio is zero, if you dont want any resize, use 1");
+		 LOGE("The resize ratio is zero, if you dont want any resize, use 1");
 
 	Mat indatav_resized = indatav;
 	if (resizeRatio != 1)
@@ -934,7 +949,7 @@ Mat sumMatArray(const vector < Mat > &MatArray)
 vector < Mat > getGradImage(const Mat & input_color_image)
 {
 	if (input_color_image.channels() != 3) {
-		throw std::runtime_error("Need a 3-channel image");
+		LOGE("Need a 3-channel image");
 	}
 	//the output
 	vector < Mat > gradImage(3);
@@ -1051,7 +1066,7 @@ vector < Mat > getGradImage(const Mat & input_color_image)
 vector < Mat > getLuvImage(const Mat & input_color_image)
 {
 	if (input_color_image.channels() != 3) {
-		throw std::runtime_error("Need a 3-channnel image");
+		LOGE("Need a 3-channnel image");
 	}
     vector < Mat > luvImage(3);
 	for (int idxC = 0; idxC < 3; ++idxC) {
@@ -1279,7 +1294,7 @@ TILDEobjects getTILDEApproxObjects(const string & name, void *_p)
 	std::ifstream fic(name, ios::in);
 	bool isOpen = fic.is_open();
 	if (!isOpen) {
-		throw std::runtime_error("Cannot open filter");
+		LOGE("Cannot open filter");
 	}
 
 	std::string lineread;
@@ -1292,11 +1307,11 @@ TILDEobjects getTILDEApproxObjects(const string & name, void *_p)
 
 	if (param != NULL) {	//load param 1st lines
 		for (int i = 0; i < tokens.size(); i++) {
-			param->push_back(std::stof(delSpaces(tokens[i])));
+			param->push_back(stof(delSpaces(tokens[i])));
 		}
 	} else {		// just push it on the parameters
 		for (int i = 0; i < tokens.size(); i++) {
-			res.parameters.push_back(std::stof(delSpaces(tokens[i])));
+			res.parameters.push_back(stof(delSpaces(tokens[i])));
 		}
 	}
 
@@ -1305,15 +1320,15 @@ TILDEobjects getTILDEApproxObjects(const string & name, void *_p)
 	tokens.clear();
 	Tokenize(lineread, tokens);
 	if (tokens.size() != 5) {
-		throw std::runtime_error("Filter not compatible");
+		 LOGE("Filter not compatible");
 		
 	}
-	int nbMax = std::stoi(delSpaces(tokens[0]));	
-	int nbSum = std::stoi(delSpaces(tokens[1]));	
+	int nbMax = stoi(delSpaces(tokens[0]));	
+	int nbSum = stoi(delSpaces(tokens[1]));	
 	int nbOriginalFilters = nbMax * nbSum;
-	int nbApproximatedFilters = std::stoi(delSpaces(tokens[2]));	
-	int nbChannels = std::stoi(delSpaces(tokens[3]));
-	int sizeFilters = std::stoi(delSpaces(tokens[4]));
+	int nbApproximatedFilters = stoi(delSpaces(tokens[2]));	
+	int nbChannels = stoi(delSpaces(tokens[3]));
+	int sizeFilters = stoi(delSpaces(tokens[4]));
 
 	if (param != NULL)	//load param 1st lines
 	{
@@ -1337,12 +1352,12 @@ TILDEobjects getTILDEApproxObjects(const string & name, void *_p)
 	tokens.clear();
 	Tokenize(lineread, tokens);
 	if (tokens.size() != nbOriginalFilters) {
-		throw std::runtime_error("Wrong number of cascades");
+		 LOGE("Wrong number of cascades");
 	}
 	//bias
 	res.bias = vector < float >(nbOriginalFilters);
 	for (int i = 0; i < tokens.size(); i++)
-		res.bias[i] = std::stof(delSpaces(tokens[i]));
+		res.bias[i] = stof(delSpaces(tokens[i]));
 	
 
 	//coeffs
@@ -1354,7 +1369,7 @@ TILDEobjects getTILDEApproxObjects(const string & name, void *_p)
 		tokens.clear();
 		Tokenize(lineread, tokens);
 		for (int i = 0; i < nbApproximatedFilters * nbChannels; i++)
-			res.coeffs[row][i] = std::stof(delSpaces(tokens[i]));
+			res.coeffs[row][i] = stof(delSpaces(tokens[i]));
 
 		if (++row == nbOriginalFilters)
 			break;
@@ -1371,7 +1386,7 @@ TILDEobjects getTILDEApproxObjects(const string & name, void *_p)
 
 		vector < float >r(sizeFilters);
 		for (int i = 0; i < sizeFilters; i++)
-			r[i] = std::stof(delSpaces(tokens[i]));
+			r[i] = stof(delSpaces(tokens[i]));
 
 		res.filters[row] = Mat(r).clone();
 
