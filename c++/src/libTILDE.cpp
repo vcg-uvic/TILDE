@@ -443,7 +443,16 @@ vector < KeyPoint > applyApproxFilters_fast(const Mat & indatav, const TILDEobje
 
     vector < Mat > convt_image;
     //LOGD("data prepare started");
-	prepareData_fast(indatav,resizeRatio, false,&convt_image);
+    if (tilde_obj.parameters[3] == 1 && indatav.channels() == 1)//nb channels
+    {
+        Mat indata_resized = indatav;
+        if (resizeRatio != 1)
+            resize(indatav, indata_resized, Size(0, 0), resizeRatio, resizeRatio);
+
+        convt_image.push_back(indata_resized);
+    }else{
+	    prepareData_fast(indatav,resizeRatio, false,&convt_image);
+	}
     //LOGD("data prepared");
 	getScoresandCombine_Approx(tilde_obj, convt_image,keep_only_positive,&respImageFinal);
 
@@ -1339,10 +1348,10 @@ TILDEobjects getTILDEApproxObjects(const string & name, void *_p)
 		param->push_back(sizeFilters);
 		res.parameters = *param;
 	} else {
-		res.parameters.push_back(nbMax);
-		res.parameters.push_back(nbSum);
-		res.parameters.push_back(nbApproximatedFilters);
-		res.parameters.push_back(nbChannels);
+		res.parameters.push_back(nbMax);//0
+		res.parameters.push_back(nbSum);//1
+		res.parameters.push_back(nbApproximatedFilters);//2
+		res.parameters.push_back(nbChannels);//3
 		res.parameters.push_back(sizeFilters);
 	}
 	//--------------------
