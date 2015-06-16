@@ -1,3 +1,40 @@
+%% evaluateKeyPointsCompWithDir_ratio.m --- 
+% 
+% Filename: evaluateKeyPointsCompWithDir_ratio.m
+% Description: 
+% Author: Yannick Verdie, Kwang Moo Yi
+% Maintainer: Yannick Verdie, Kwang Moo Yi
+% Created: Tue Jun 16 17:13:51 2015 (+0200)
+% Version: 
+% Package-Requires: ()
+% Last-Updated: Tue Jun 16 17:13:57 2015 (+0200)
+%           By: Kwang
+%     Update #: 1
+% URL: 
+% Doc URL: 
+% Keywords: 
+% Compatibility: 
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%% Commentary: 
+% 
+% 
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%% Change Log:
+% 
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+% Copyright (C), EPFL Computer Vision Lab.
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%% Code:
+
+
 function [eval_result] = evaluateKeyPointsCompWithDir_ratio( trainset_name, testset_name, num_key, parameters)
 global sRoot;  
 
@@ -189,3 +226,5 @@ function [fileList di] = getAllFiles(dirName)
   di = dirData(3:end);
   di(~dirIndex(3:end)) = '';
 end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% evaluateKeyPointsCompWithDir_ratio.m ends here

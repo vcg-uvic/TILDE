@@ -3,13 +3,13 @@
 % Filename: link.m
 % Description: Script to create soft links 
 % Author: Kwang Moo Yi, Yannick Verdie
-% Maintainer: 
+% Maintainer: Kwang Moo Yi
 % Created: Fri Jun  5 15:22:44 2015 (+0200)
 % Version: 
 % Package-Requires: ()
-% Last-Updated: Fri Jun  5 17:30:04 2015 (+0200)
+% Last-Updated: Tue Jun 16 17:11:49 2015 (+0200)
 %           By: Kwang
-%     Update #: 5
+%     Update #: 6
 % URL: 
 % Doc URL: 
 % Keywords: 

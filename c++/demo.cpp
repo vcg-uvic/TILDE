@@ -2,14 +2,14 @@
 // 
 // Filename: test.cpp
 // Description: 
-// Author: Yannick Verdie, Kwang Moo Yi, Alberto Crivella
+// Author: Yannick Verdie, Kwang Moo Yi
 // Maintainer: Yannick Verdie
 // Created: Tue Mar  3 17:47:28 2015 (+0100)
 // Version: 0.5a
 // Package-Requires: ()
-// Last-Updated: Thu May 28 13:04:33 2015 (+0200)
+// Last-Updated: Tue Jun 16 17:09:04 2015 (+0200)
 //           By: Kwang
-//     Update #: 25
+//     Update #: 26
 // URL: 
 // Doc URL: 
 // Keywords: 

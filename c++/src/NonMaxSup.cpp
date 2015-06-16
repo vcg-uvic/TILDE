@@ -2,14 +2,14 @@
 // 
 // Filename: NonMaxSup.cpp
 // Description: 
-// Author: Yannick Verdie, Kwang Moo Yi, Alberto Crivella
+// Author: Yannick Verdie, Kwang Moo Yi
 // Maintainer: Yannick Verdie, Kwang Moo Yi
 // Created: Tue Mar  3 17:48:14 2015 (+0100)
 // Version: 0.5a
 // Package-Requires: ()
-// Last-Updated: Thu May 28 12:53:40 2015 (+0200)
+// Last-Updated: Tue Jun 16 17:09:37 2015 (+0200)
 //           By: Kwang
-//     Update #: 5
+//     Update #: 6
 // URL: 
 // Doc URL: 
 // Keywords: 
