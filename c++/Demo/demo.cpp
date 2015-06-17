@@ -135,7 +135,7 @@ int main(int argc,char** argv)
 		cout<<"Process image without approximation (Mexico filter):"<<endl;
 		// Path to the TILDE filter
 			// Initialize the score image
-		pathFilter = "../filters/Mexico.txt";
+		pathFilter = "../Lib/filters/Mexico.txt";
  		Mat score1 = Mat::zeros(I.rows,I.cols,CV_32F);
 		vector<KeyPoint> kps1 = testAndDump(I,pathFilter,1,NULL, &score1);
 		Mat ImgKps1;
@@ -147,7 +147,7 @@ int main(int argc,char** argv)
 
 		cout<<"Process Image with approximation (Mexico filter):"<<endl;
 		// Path to the TILDE approx filter
-		pathFilter = "../filters/Mexico24.txt";
+		pathFilter = "../Lib/filters/Mexico24.txt";
 		Mat score2 = Mat::zeros(I.rows,I.cols,CV_32F);
 		vector<KeyPoint> kps2 = testAndDump(I,pathFilter,1,"n_approx", &score2);
 		Mat ImgKps2;
@@ -160,7 +160,7 @@ int main(int argc,char** argv)
 
 		cout<<"Process Image with approximation (Mexico filter) fast:"<<endl;
 		// Path to the TILDE approx filter
-		pathFilter = "../filters/Mexico24.txt";
+		pathFilter = "../Lib/filters/Mexico24.txt";
 		Mat score3 = Mat::zeros(I.rows,I.cols,CV_32F);
 		vector<KeyPoint> kps3 = test_fast(I,pathFilter,1, &score3);
 		Mat ImgKps3;
