@@ -55,7 +55,7 @@ project root directory):
 
 Then you can run the demo code from the build directory with:
 
- >> ./demo
+ >> ./Demo/demo
 
 ----
 IMPORTANT FUNCTIONS:
