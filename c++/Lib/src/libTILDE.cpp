@@ -588,7 +588,7 @@ class Parallel_process:public cv::ParallelLoopBody {
 			Mat res;
 			sepFilter2D(convt_image[idxDim], res, -1, kernelX, kernelY, Point(-1, -1),
 				    0, BORDER_REFLECT);
-			curRes[idxFilter] = res.clone();
+			curRes[idxFilter] = res.clone(); // not cloning causes wierd issues.
 
 }}};
 
@@ -676,7 +676,7 @@ void getScoresandCombine_Approx(const TILDEobjects & cas,
 
 	*output = Mat::zeros(convt_image[0].size(), CV_32F);
 
-	vector < vector < Mat > >res(nbSum,vector < Mat >(nbMax));
+	vector < vector < Mat > >res(nbSum,vector < Mat >(nbMax, Mat::zeros(convt_image[0].size(), CV_32F)));
 
 	// calculate separable responses
 	int idxSum = 0;
@@ -690,17 +690,18 @@ void getScoresandCombine_Approx(const TILDEobjects & cas,
 
 		Mat maxVal;
 		int count = 0;
-		for (int idxOrig = 0; idxOrig < nbSum * nbMax; ++idxOrig) 
+		for (int idxOrig = 0; idxOrig < nbSum * nbMax; ++idxOrig)
 		{
 			int idxSum = idxOrig / nbMax;
 			int idxMax = idxOrig % nbMax;
 
-			Mat result = res[idxSum][idxMax];
-			
-			for (int idxFilter = 0; idxFilter < cas.filters.size() / 2; idxFilter++) 
-					result = result + cas.coeffs[idxOrig][idxFilter] * curRes[idxFilter];
+//			Mat result = res[idxSum][idxMax];
+			for (int idxFilter = 0; idxFilter < cas.filters.size() / 2; idxFilter++)
+				cv::scaleAdd(curRes[idxFilter], cas.coeffs[idxOrig][idxFilter], res[idxSum][idxMax], res[idxSum][idxMax]);
+//					result = result + cas.coeffs[idxOrig][idxFilter] * curRes[idxFilter];
 
-			res[idxSum][idxMax] = result + cas.bias[idxMax + idxSum*nbMax];
+			cv::add(res[idxSum][idxMax], cas.bias[idxMax + idxSum*nbMax], res[idxSum][idxMax]);
+//			res[idxSum][idxMax] = result + cas.bias[idxMax + idxSum*nbMax];
 
 			 if (idxOrig % nbMax == 0)
 			 	 maxVal = res[idxSum][idxMax];
@@ -709,8 +710,10 @@ void getScoresandCombine_Approx(const TILDEobjects & cas,
 
 			 if ((idxOrig+1) % nbMax == 0)//the last one
 			 {
-				// sign and sum
-				*output = (idxSum % 2 == 0 ? -maxVal : maxVal) + *output;
+//				// sign and sum
+//				*output = (idxSum % 2 == 0 ? -maxVal : maxVal) + *output;
+			 	float sign_delta = (idxSum % 2 == 0 ? -1. : 1.);
+				cv::scaleAdd(maxVal, sign_delta, *output, *output);
 			 }
 	}
 
