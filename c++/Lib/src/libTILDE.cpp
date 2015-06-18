@@ -7,9 +7,9 @@
 // Created: Tue Mar  3 17:53:46 2015 (+0100)
 // Version: 0.5a
 // Package-Requires: ()
-// Last-Updated: Tue Jun 16 17:25:55 2015 (+0200)
+// Last-Updated: Thu May 28 13:18:32 2015 (+0200)
 //           By: Kwang
-//     Update #: 41
+//     Update #: 40
 // URL: 
 // Doc URL: 
 // Keywords: 
@@ -53,99 +53,118 @@ vector < Mat > getLuv_fast(const Mat & input_color_image)
 	}
 
 	//init
+
+
+	class classRGB2LUV :public ParallelLoopBody
+	{
+		public:
+			classRGB2LUV(const Mat& imgIn_, const vector<Mat>* vecOut_)
+				: imgIn(imgIn_), vecOut(vecOut_)
+				{
+					for(int i=0; i<1025; i++)
+					{
+						float y = (float) (i/1024.0);
+						float l = y>y0 ? 116*(float)pow((double)y,1.0/3.0)-16 : y*a;
+						lTable[i] = l*maxi;
+					}
+				};
+
+			// ! Overloaded virtual operator
+			// convert range call to row call.
+			virtual void operator()(const Range &r) const
+			{
+
+				Rect roi(0, r.start, imgIn.cols, r.end - r.start);
+				Mat in(imgIn, roi);
+
+
+				Mat out1((*vecOut)[0],roi);
+				Mat out2((*vecOut)[1],roi);
+				Mat out3((*vecOut)[2],roi);
+
+
+				//Rect roi(0, r.begin(), convt_image[idxDim].cols, r.end() - r.begin());
+				for (int i = 0; i < in.rows; i++)
+				{
+					uchar* pixelin = in.ptr<uchar>(i);  // point to first color in row
+					float* pixelout1 = out1.ptr<float>(i);  // point to first color in row
+					float* pixelout2 = out2.ptr<float>(i);  // point to first color in row
+					float* pixelout3 = out3.ptr<float>(i);  // point to first color in row
+					for (int j = 0; j < in.cols; j++)//row
+					{
+						// cv::Vec3b rgb = in.at<cv::Vec3b>(j,i);
+						// float r = rgb[2] / 255.0f;
+					 //    float g = rgb[1] / 255.0f;
+					 //    float b = rgb[0] / 255.0f;
+						float b = *pixelin++ / 255.0f;
+						float g = *pixelin++ / 255.0f;
+						float r = *pixelin++ / 255.0f;
+
+										 //RGB to LUV conversion
+
+						//delcare variables
+						double  x, y, z, u_prime, v_prime, constant, L, u, v;
+
+						//convert RGB to XYZ...
+						x       = XYZ[0][0]*r + XYZ[0][1]*g + XYZ[0][2]*b;
+						y       = XYZ[1][0]*r + XYZ[1][1]*g + XYZ[1][2]*b;
+						z       = XYZ[2][0]*r + XYZ[2][1]*g + XYZ[2][2]*b;
+
+						//convert XYZ to LUV...
+
+						//compute ltable(y*1024)
+						L = lTable[(int)(y*1024)];
+
+						//compute u_prime and v_prime
+						constant    = 1/(x + 15 * y + 3 * z + 1e-35);   //=z
+
+						u_prime = (4 * x) * constant;   //4*x*z
+						v_prime = (9 * y) * constant;
+
+
+						//compute u* and v*
+						u = (float) (13 * L * (u_prime - Un_prime)) - minu;
+						v = (float) (13 * L * (v_prime - Vn_prime)) - minv;
+
+						// out1.at<float>(j,i) = L*270*2.55;
+						// out2.at<float>(j,i) = ((u*270-88)+ 134.0)* 255.0 / 354.0;
+						// out3.at<float>(j,i) = ((v*270-134)+ 140.0)* 255.0 / 256.0;
+
+						*pixelout1++ = L*270*2.55;
+						*pixelout2++ = ((u*270-88)+ 134.0)* 255.0 / 354.0;
+						*pixelout3++ = ((v*270-134)+ 140.0)* 255.0 / 256.0;
+
+					}
+				}
+
+
+			}
+		private:
 		const float y0=(float) ((6.0/29)*(6.0/29)*(6.0/29));
 		const float a= (float) ((29.0/3)*(29.0/3)*(29.0/3));
-						const double XYZ[3][3] = {  {  0.430574,  0.341550,  0.178325 },   
-				                            {  0.222015,  0.706655,  0.071330 },   
-				                            {  0.020183,  0.129553,  0.939180 }   };  
+		const double XYZ[3][3] = {  {  0.430574,  0.341550,  0.178325 },
+							{  0.222015,  0.706655,  0.071330 },
+							{  0.020183,  0.129553,  0.939180 }   };
 
-		const double Un_prime   = 0.197833;   
-		const double Vn_prime   = 0.468331;   
-		const double maxi 		= 1.0/270;  
+		const double Un_prime   = 0.197833;
+		const double Vn_prime   = 0.468331;
+		const double maxi 		= 1.0/270;
 		const double minu 		= -88*maxi;
 		const double minv 		= -134*maxi;
-		const double Lt     = 0.008856; 
+		const double Lt     = 0.008856;
 
+		//addapted from Dollar toolbox
+		//http://vision.ucsd.edu/~pdollar/toolbox/doc/
 
-		// adapted from Dollar toolbox
-		// http://vision.ucsd.edu/~pdollar/toolbox/doc/
-		// See c++/src/3rdParties/license_dollarToolBox.txt
-		static float lTable[1064]; 
-		for(int i=0; i<1025; i++) 
-		{
-			float y = (float) (i/1024.0);
-			float l = y>y0 ? 116*(float)pow((double)y,1.0/3.0)-16 : y*a;
-			lTable[i] = l*maxi;
-		}
+		float lTable[1064];
+
+		const Mat& imgIn;
+		const vector<Mat>* vecOut;
+	};
 
 	// Get Max idx using Magnitude
-     cv::parallel_for( cv::BlockedRange (0, input_color_image.rows), [=] (const cv::BlockedRange &r)
-    {
-
-    	Rect roi(0, r.begin(), input_color_image.cols, r.end() - r.begin());
-    	Mat in(input_color_image, roi); 
-
-
-    	Mat out1(luvImage[0],roi);
-    	Mat out2(luvImage[1],roi);
-    	Mat out3(luvImage[2],roi);
-
-
-    	//Rect roi(0, r.begin(), convt_image[idxDim].cols, r.end() - r.begin());
-        for (int i = 0; i < in.rows; i++) 
-		{
-			uchar* pixelin = in.ptr<uchar>(i);  // point to first color in row
-			float* pixelout1 = out1.ptr<float>(i);  // point to first color in row
-			float* pixelout2 = out2.ptr<float>(i);  // point to first color in row
-			float* pixelout3 = out3.ptr<float>(i);  // point to first color in row
-        	for (int j = 0; j < in.cols; j++)//row
-	        {
-				// cv::Vec3b rgb = in.at<cv::Vec3b>(j,i);
-				// float r = rgb[2] / 255.0f;
-			 //    float g = rgb[1] / 255.0f;
-			 //    float b = rgb[0] / 255.0f;
-	        	float b = *pixelin++ / 255.0f;
-                float g = *pixelin++ / 255.0f;
-				float r = *pixelin++ / 255.0f;
-
-							     //RGB to LUV conversion   
-  
-			    //delcare variables   
-			    double  x, y, z, u_prime, v_prime, constant, L, u, v;   
-			   
-			    //convert RGB to XYZ...   
-			    x       = XYZ[0][0]*r + XYZ[0][1]*g + XYZ[0][2]*b;   
-			    y       = XYZ[1][0]*r + XYZ[1][1]*g + XYZ[1][2]*b;   
-			    z       = XYZ[2][0]*r + XYZ[2][1]*g + XYZ[2][2]*b;   
-			   
-			    //convert XYZ to LUV...   
-			   
-			    //compute ltable(y*1024)
-			    L = lTable[(int)(y*1024)]; 
-			   
-			    //compute u_prime and v_prime   
-			    constant    = 1/(x + 15 * y + 3 * z + 1e-35);   //=z
-
-		        u_prime = (4 * x) * constant;   //4*x*z
-		        v_prime = (9 * y) * constant;   
-
-			   
-			    //compute u* and v*   
-			    u = (float) (13 * L * (u_prime - Un_prime)) - minu;
-			    v = (float) (13 * L * (v_prime - Vn_prime)) - minv;      
-			 
- 				// out1.at<float>(j,i) = L*270*2.55; 
-			    // out2.at<float>(j,i) = ((u*270-88)+ 134.0)* 255.0 / 354.0; 
-			    // out3.at<float>(j,i) = ((v*270-134)+ 140.0)* 255.0 / 256.0;
-
-			    *pixelout1++ = L*270*2.55; 
-			    *pixelout2++ = ((u*270-88)+ 134.0)* 255.0 / 354.0; 
-			    *pixelout3++ = ((v*270-134)+ 140.0)* 255.0 / 256.0;
-
-	        }
-	    }
-
-    });
+	 classRGB2LUV LUVconverter(input_color_image,&luvImage);
+     cv::parallel_for_( cv::Range (0, input_color_image.rows), LUVconverter);
 
 	return luvImage;
 }
@@ -170,7 +189,7 @@ vector < Mat > getGrad_fast(const Mat & input_color_image)
     vector < Mat > gy(nbChannels);
 
     //the output
-    vector < Mat > gradImage(3);//,Mat(input_color_image.rows, input_color_image.cols, CV_32F));
+    vector < Mat > gradImage(3);
 
 
    // // prepare output
@@ -206,72 +225,87 @@ vector < Mat > getGrad_fast(const Mat & input_color_image)
 		//sqrt(gx[idxC].mul(gx[idxC]) + gy[idxC].mul(gy[idxC]), mag[idxC]);
 	}
 
-    cv::parallel_for( cv::BlockedRange (0, input_color_image.rows), [=] (const cv::BlockedRange &r)
-    {
-        Rect roi(0, r.begin(), input_color_image.cols, r.end() - r.begin());
-        vector<Mat> inx( nbChannels);vector<Mat> iny( nbChannels);
-
-    	for (int idxC = 0; idxC < nbChannels; ++idxC)
-        {
-    	    inx[idxC] = Mat(gx[idxC], roi);
-    	    iny[idxC] = Mat(gy[idxC], roi);
-        }
 
 
-    	Mat out1(gradImage[0],roi);
-    	Mat out2(gradImage[1],roi);
-    	Mat out3(gradImage[2],roi);
-    	//Rect roi(0, r.begin(), convt_image[idxDim].cols, r.end() - r.begin());
-        for (int i = 0; i < inx[0].rows; i++) 
-		{
-			float* pixelin1[nbChannels];float* pixelin2[nbChannels];
-			for (int idxC = 0; idxC < nbChannels; ++idxC)
+	class classImg2GxGyM :public ParallelLoopBody
+	{
+		public:
+			classImg2GxGyM(const vector<Mat>& vecInGx_, const vector<Mat>& vecInGy_, const vector<Mat>* vecOut_)
+				: vecInGx(vecInGx_),vecInGy(vecInGy_), vecOut(vecOut_)
+				{
+				   nbChannels = vecInGx.size();
+
+				};
+
+			// ! Overloaded virtual operator
+			// convert range call to row call.
+			virtual void operator()(const Range &r) const
 			{
-				pixelin1[idxC] = inx[idxC].ptr<float>(i);  // point to first color in row
-				pixelin2[idxC] = iny[idxC].ptr<float>(i);  // point to first color in row
-			}
 
-			float* pixelout1 = out1.ptr<float>(i);  // point to first color in row
-			float* pixelout2 = out2.ptr<float>(i);  // point to first color in row
-			float* pixelout3 = out3.ptr<float>(i);  // point to first color in row
-        	for (int j = 0; j < inx[0].cols; j++)//row
-	        {
-	        	float maxVal = -1;float maxValx;float maxValy;
-	        	float val_squared;
-	        	float valx;float valy;
-	        	for (int idxC = 0; idxC < nbChannels; ++idxC)
-	        	{
-	        		valx = *pixelin1[idxC]++;//inx[idxC].at < float >(i, j);
-	        		valy = *pixelin2[idxC]++;//iny[idxC].at < float >(i, j);
-					val_squared = (valx*valx+valy*valy);
-					if (val_squared > maxVal)
+				Rect roi(0, r.start, vecInGx[0].cols, r.end - r.start);
+				vector<Mat> inx( nbChannels);vector<Mat> iny( nbChannels);
+
+				for (int idxC = 0; idxC < nbChannels; ++idxC)
+				{
+					inx[idxC] = Mat(vecInGx[idxC], roi);
+					iny[idxC] = Mat(vecInGy[idxC], roi);
+				}
+
+
+				Mat out1((*vecOut)[0],roi);
+				Mat out2((*vecOut)[1],roi);
+				Mat out3((*vecOut)[2],roi);
+
+				for (int i = 0; i < inx[0].rows; i++)
+				{
+					float* pixelin1[nbChannels];float* pixelin2[nbChannels];
+					for (int idxC = 0; idxC < nbChannels; ++idxC)
 					{
-						maxVal = val_squared ;
-						maxValx = valx;
-						maxValy = valy;		
+						pixelin1[idxC] = inx[idxC].ptr<float>(i);  // point to first color in row
+						pixelin2[idxC] = iny[idxC].ptr<float>(i);  // point to first color in row
 					}
-	        	}
 
-	   //      	out1.at < float >(j, i) = maxValx * 0.5 + 128.0;
-				// out2.at < float >(j, i) = maxValy * 0.5 + 128.0;
-				// out3.at < float >(j, i) = sqrt(maxVal);
+					float* pixelout1 = out1.ptr<float>(i);  // point to first color in row
+					float* pixelout2 = out2.ptr<float>(i);  // point to first color in row
+					float* pixelout3 = out3.ptr<float>(i);  // point to first color in row
+					for (int j = 0; j < inx[0].cols; j++)//row
+					{
+						float maxVal = -1;float maxValx;float maxValy;
+						float val_squared;
+						float valx;float valy;
+						for (int idxC = 0; idxC < nbChannels; ++idxC)
+						{
+							valx = *pixelin1[idxC]++;//inx[idxC].at < float >(i, j);
+							valy = *pixelin2[idxC]++;//iny[idxC].at < float >(i, j);
+							val_squared = (valx*valx+valy*valy);
+							if (val_squared > maxVal)
+							{
+								maxVal = val_squared ;
+								maxValx = valx;
+								maxValy = valy;
+							}
+						}
 
-				*pixelout1++ = maxValx * 0.5 + 128.0;
-				*pixelout2++ = maxValy * 0.5 + 128.0;
-				*pixelout3++ = sqrt(maxVal);
+						*pixelout1++ = maxValx * 0.5 + 128.0;
+						*pixelout2++ = maxValy * 0.5 + 128.0;
+						*pixelout3++ = sqrt(maxVal);
 
+					}
+				}
 			}
-	    }
+		private:
 
-    }
-    );
+		int nbChannels;
+		const vector<Mat>& vecInGx;
+		const vector<Mat>& vecInGy;
+		const vector<Mat>* vecOut;
+	};
+
+	 classImg2GxGyM GxGyMconverter(gx,gy,&gradImage);
+     cv::parallel_for_( cv::Range (0, input_color_image.rows), GxGyMconverter);
 
 	return gradImage;
 }
-
-
-
-
 
 
 // Function which return in Keypoint Structure
@@ -385,7 +419,10 @@ void prepareData_fast(const Mat & indatav,
 		copy(gradImage.begin(), gradImage.end(), std::back_inserter(*output));
 
 		if (indata_resized.channels() == 1)
+		{
+		    indata_resized.convertTo(indata_resized, CV_32F);
 		    output->push_back(indata_resized);
+		}
 		else
 		{
 		    vector < Mat > luvImage = getLuv_fast(indata_resized);
@@ -1105,7 +1142,7 @@ vector < Mat > getLuvImage(const Mat & input_color_image)
 		}
 
 	// Get Max idx using Magnitude
-    //  cv::parallel_for( cv::BlockedRange (0, input_color_image.rows), [=] (const cv::BlockedRange &r)
+    //  cv::parallel_for( cv::BlockedRange (0, input_color_image.rows), [=] (const cv::Range &r)
     // {
 
     // 	Rect roi(0, r.begin(), input_color_image.cols, r.end() - r.begin());
