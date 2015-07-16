@@ -64,7 +64,7 @@ NonMaxSup(const Mat & response)
     return res;
 }
 
-vector<KeyPoint> NonMaxSup_resize_format(const Mat &response, const float& resizeRatio, const float &scaleKeypoint, const float & orientationKeypoint)
+vector<KeyPoint> NonMaxSup_resize_format(const Mat &response, const float& resizeRatio, const float &scaleKeypoint, const float & orientationKeypoint, const bool sortMe)
 {
     // stupid non-max suppression without any fancy tricks
     vector<KeyPoint> res;
@@ -97,6 +97,13 @@ vector<KeyPoint> NonMaxSup_resize_format(const Mat &response, const float& resiz
             pixelinprev++;//next
 
         }            
+    }
+
+    if (sortMe) {
+        std::sort(res.begin(), res.end(),
+              [](const KeyPoint & a, const KeyPoint & b) {
+              return a.response > b.response;}
+        );
     }
 
     return res;

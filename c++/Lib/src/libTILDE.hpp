@@ -115,7 +115,11 @@ public:
 	bool isApprox;
 	bool useDescriptorField;
 	string name;
-	
+
+	//temporary memory init once only
+	Mat respImageFinal;
+    vector < Mat > convt_image;
+	vector < KeyPoint > res_with_score;
 };
 
 
@@ -159,7 +163,7 @@ vector < Point3f > applyApproxFilters(
 // Apply and get TILDE keypoints in < x, y, score > format
 vector < KeyPoint > applyApproxFilters_fast(
 	const Mat & p,
-	const TILDEobjects & why,
+	TILDEobjects & why,
 	const vector < float >&param,
 	const bool sortMe,
 	const bool keep_only_positive,

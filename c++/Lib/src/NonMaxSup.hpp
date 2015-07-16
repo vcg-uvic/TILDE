@@ -2,14 +2,14 @@
 // 
 // Filename: NonMaxSup.hpp
 // Description: 
-// Author: Yannick Verdie, Kwang Moo Yi
+// Author: Yannick Verdie, Kwang Moo Yi, Alberto Crivella
 // Maintainer: Yannick Verdie, Kwang Moo Yi
 // Created: Tue Mar  3 17:51:23 2015 (+0100)
 // Version: 0.5a
 // Package-Requires: ()
-// Last-Updated: Tue Jun 16 17:09:29 2015 (+0200)
+// Last-Updated: Thu May 28 12:53:23 2015 (+0200)
 //           By: Kwang
-//     Update #: 9
+//     Update #: 8
 // URL: 
 // Doc URL: 
 // Keywords: 
@@ -49,7 +49,7 @@ using namespace std;
 using namespace cv;
 
 vector<Point3f> NonMaxSup(const Mat & response);
-vector<KeyPoint> NonMaxSup_resize_format(const Mat &response, const float& resizeRatio, const float &scaleKeypoint, const float & orientationKeypoint);
+vector<KeyPoint> NonMaxSup_resize_format(const Mat &response, const float& resizeRatio, const float &scaleKeypoint, const float & orientationKeypoint, const bool sortMe = false);
 
 
 

@@ -178,9 +178,6 @@ vector < Mat > getGrad_fast(const Mat & input_color_image)
     Mat p = (Mat_ < float >(1, 5) << 0.037659, 0.249153, 0.426375, 0.249153, 0.037659);
     Mat pT = (Mat_ < float >(5, 1) << 0.037659, 0.249153, 0.426375, 0.249153, 0.037659);
 
-
-
-
     const int nbChannels = input_color_image.channels();
 
     //temp storage...
@@ -193,7 +190,8 @@ vector < Mat > getGrad_fast(const Mat & input_color_image)
 
 
    // // prepare output
-     for (int idxC = 0; idxC < 3; ++idxC) {
+     for (int idxC = 0; idxC < 3; ++idxC) 
+     {
          gradImage[idxC].create(input_color_image.rows, input_color_image.cols, CV_32F);
      }
 
@@ -352,6 +350,8 @@ vector < KeyPoint > getTILDEKeyPoints_fast(const Mat & indatav, const string & f
 
 	param[1] = scaleKeypoint;
 	param[2] = orientationKeypoint;
+	//tilde_obj.convt_image = vector<Mat>(1,Mat::zeros( indatav.size(), CV_32F));
+
 
     return applyApproxFilters_fast(img, tilde_obj, param, sortMe, keepPositiveScoreOnly, score);
 }
@@ -412,26 +412,17 @@ void prepareData_fast(const Mat & indatav,
 		resize(indatav, indata_resized, Size(0, 0), resizeRatio, resizeRatio);
 	// vector < Mat > &convt_image = output;
 
+	if (output->size() == 0)
+		*output = vector<Mat>(6,Mat::zeros( indatav.size(), CV_32F));
+		//LOGE("vector need to be initialized");
+
 	if (useDescriptorField) {
 		*output = getNormalizedDescriptorField(indatav);
 	} else {
 		vector < Mat > gradImage = getGrad_fast(indata_resized);
-		copy(gradImage.begin(), gradImage.end(), std::back_inserter(*output));
-
-		if (indata_resized.channels() == 1)
-		{
-		    indata_resized.convertTo(indata_resized, CV_32F);
-		    output->push_back(indata_resized);
-		}
-		else
-		{
-		    vector < Mat > luvImage = getLuv_fast(indata_resized);
-		    copy(luvImage.begin(), luvImage.end(), std::back_inserter(*output));
-		}
-
-//		if (output->size() != 6)
-//			LOGE("Error during creation of the features (LUV+Grad)");
-		
+		copy(gradImage.begin(), gradImage.end(), output->begin());
+		vector < Mat > luvImage = getLuv_fast(indata_resized);
+		copy(luvImage.begin(), luvImage.end(), output->begin()+3);
 	}
 }
 
@@ -465,7 +456,7 @@ void getCombinedScore(const vector < vector < Mat > >& cascade_responses, const 
 }
 
 //template <typename T>
-vector < KeyPoint > applyApproxFilters_fast(const Mat & indatav, const TILDEobjects & tilde_obj,
+vector < KeyPoint > applyApproxFilters_fast(const Mat & indatav, TILDEobjects & tilde_obj,
 				       const vector < float >&param,
 				       const bool sortMe, const bool keep_only_positive,
 				       Mat * score)
@@ -474,12 +465,14 @@ vector < KeyPoint > applyApproxFilters_fast(const Mat & indatav, const TILDEobje
 	if (resizeRatio == 0)
 		 LOGE("The resize ratio is zero, if you dont want any resize, use 1");
 
-	const float scaleKeypoint = param[1];
-	const float orientationKeypoint = param[2];
+	const float& scaleKeypoint = param[1];
+	const float& orientationKeypoint = param[2];
 
-	Mat respImageFinal;
+    //here
+	//Mat respImageFinal;
 
-    vector < Mat > convt_image;
+	//here
+    //vector < Mat > convt_image;
     //LOGD("data prepare started");
     if (tilde_obj.parameters[3] == 1 && indatav.channels() == 1)//nb channels
     {
@@ -487,29 +480,22 @@ vector < KeyPoint > applyApproxFilters_fast(const Mat & indatav, const TILDEobje
         if (resizeRatio != 1)
             resize(indatav, indata_resized, Size(0, 0), resizeRatio, resizeRatio);
 
-        convt_image.push_back(indata_resized);
+        tilde_obj.convt_image[0] = indata_resized.clone();
     }else{
-	    prepareData_fast(indatav,resizeRatio, false,&convt_image);
+	    prepareData_fast(indatav,resizeRatio, false,&(tilde_obj.convt_image));
 	}
     //LOGD("data prepared");
-	getScoresandCombine_Approx(tilde_obj, convt_image,keep_only_positive,&respImageFinal);
+	getScoresandCombine_Approx(tilde_obj, tilde_obj.convt_image,keep_only_positive,&(tilde_obj.respImageFinal));
 
 
 	if (score != NULL)
-		*score = respImageFinal.clone();
+		*score = tilde_obj.respImageFinal.clone();
 
 
 	// perform non-max suppression
-	vector < KeyPoint > res_with_score = NonMaxSup_resize_format(respImageFinal, resizeRatio, scaleKeypoint, orientationKeypoint); //return x,y,score for each keypoint, such as we can sort them later
-
-	if (sortMe) {
-		std::sort(res_with_score.begin(), res_with_score.end(),
-			  [](const KeyPoint & a, const KeyPoint & b) {
-			  return a.response > b.response;}
-		);
-	}
-
-	return res_with_score;
+	//here
+	//vector < KeyPoint > res_with_score = NonMaxSup_resize_format(respImageFinal, resizeRatio, scaleKeypoint, orientationKeypoint); //return x,y,score for each keypoint, such as we can sort them later
+   return NonMaxSup_resize_format(tilde_obj.respImageFinal, resizeRatio, scaleKeypoint, orientationKeypoint, sortMe); //return x,y,score for each keypoint, such as we can sort them later
 }
 
 vector < Point3f > applyApproxFilters(const Mat & indatav, const TILDEobjects & tilde_obj,
@@ -674,8 +660,9 @@ void getScoresandCombine_Approx(const TILDEobjects & cas,
 	int sizeFilters = param[5];	//21
 	//--------------------
 
+//here
 	*output = Mat::zeros(convt_image[0].size(), CV_32F);
-
+//here
 	vector < vector < Mat > >res(nbSum,vector < Mat >(nbMax, Mat::zeros(convt_image[0].size(), CV_32F)));
 
 	// calculate separable responses
