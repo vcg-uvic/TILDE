@@ -66,8 +66,12 @@ NonMaxSup(const Mat & response)
 
 vector<KeyPoint> NonMaxSup_resize_format(const Mat &response, const float& resizeRatio, const float &scaleKeypoint, const float & orientationKeypoint, const bool sortMe)
 {
+	if (response.type() != CV_32F)
+        LOGE("Wrong type in NMS");
     // stupid non-max suppression without any fancy tricks
     vector<KeyPoint> res;
+
+
     for(int i=1; i<response.rows-1; ++i)
     {
         const float* pixelinprev = response.ptr<float>(i-1); //previous line
@@ -105,6 +109,7 @@ vector<KeyPoint> NonMaxSup_resize_format(const Mat &response, const float& resiz
               return a.response > b.response;}
         );
     }
+
 
     return res;
 }

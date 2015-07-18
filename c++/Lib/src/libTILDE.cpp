@@ -45,7 +45,7 @@ vector < Mat > getLuv_fast(const Mat & input_color_image)
 {
 	if (input_color_image.channels() != 3)
 	{
-		LOGE("Need a 3-channnel image");
+		LOGE("Need a 3-channnel image (Luv_fast)");
 	}
     vector < Mat > luvImage(3);
 	for (int idxC = 0; idxC < 3; ++idxC) {
@@ -407,23 +407,32 @@ void prepareData_fast(const Mat & indatav,
 				           vector < Mat > *output)
 {
 
+	if (indatav.channels() == 3)
+		LOGE("need a rgb image....");
+
 	Mat indata_resized = indatav;
 	if (resizeRatio != 1)
 		resize(indatav, indata_resized, Size(0, 0), resizeRatio, resizeRatio);
 	// vector < Mat > &convt_image = output;
 
-	if (output->size() == 0)
-		*output = vector<Mat>(6,Mat::zeros( indatav.size(), CV_32F));
+//	if (output->size() == 0)
+//		if (indatav.channels() == 1)
+//			*output = vector<Mat>(1,Mat::zeros( indatav.size(), CV_32F));
+//		else
+			*output = vector<Mat>(6,Mat::zeros( indatav.size(), CV_32F));
 		//LOGE("vector need to be initialized");
 
-	if (useDescriptorField) {
-		*output = getNormalizedDescriptorField(indatav);
-	} else {
-		vector < Mat > gradImage = getGrad_fast(indata_resized);
-		copy(gradImage.begin(), gradImage.end(), output->begin());
-		vector < Mat > luvImage = getLuv_fast(indata_resized);
-		copy(luvImage.begin(), luvImage.end(), output->begin()+3);
-	}
+//	if (indatav.channels() == 1)
+//		(*output)[0] = indatav;
+//	else
+		if (useDescriptorField) {
+			*output = getNormalizedDescriptorField(indatav);
+		} else {
+			vector < Mat > gradImage = getGrad_fast(indata_resized);
+			copy(gradImage.begin(), gradImage.end(), output->begin());
+			vector < Mat > luvImage = getLuv_fast(indata_resized);
+			copy(luvImage.begin(), luvImage.end(), output->begin()+3);
+		}
 }
 
 
@@ -473,20 +482,30 @@ vector < KeyPoint > applyApproxFilters_fast(const Mat & indatav, TILDEobjects & 
 
 	//here
     //vector < Mat > convt_image;
-    //LOGD("data prepare started");
-    if (tilde_obj.parameters[3] == 1 && indatav.channels() == 1)//nb channels
+//    LOGD("size %d", tilde_obj.parameters.size());
+//	for (int i=0;i<tilde_obj.parameters.size();i++)
+//		LOGD("val %f", tilde_obj.parameters[i]);
+
+	if (indatav.channels() != tilde_obj.parameters[4])
+		LOGE("error, non-matching filter and image... %d / %d",indatav.channels(),tilde_obj.parameters[4]);
+
+	//LOGD("data to prepare");
+    if (tilde_obj.parameters[4] == 1 && indatav.channels() == 1)//nb channels
     {
         Mat indata_resized = indatav;
         if (resizeRatio != 1)
             resize(indatav, indata_resized, Size(0, 0), resizeRatio, resizeRatio);
 
-        tilde_obj.convt_image[0] = indata_resized.clone();
+	    if (tilde_obj.convt_image.size() == 0)
+		    tilde_obj.convt_image = vector<Mat>(1,indata_resized);
+		else
+            tilde_obj.convt_image[0] = indata_resized.clone();
     }else{
 	    prepareData_fast(indatav,resizeRatio, false,&(tilde_obj.convt_image));
 	}
     //LOGD("data prepared");
 	getScoresandCombine_Approx(tilde_obj, tilde_obj.convt_image,keep_only_positive,&(tilde_obj.respImageFinal));
-
+	//LOGD("score done");
 
 	if (score != NULL)
 		*score = tilde_obj.respImageFinal.clone();
@@ -572,7 +591,7 @@ class Parallel_process:public cv::ParallelLoopBody {
 			// the channel this filter is supposed to be applied to
 			const int idxDim = idxFilter / nbApproximatedFilters;
 			Mat res;
-			sepFilter2D(convt_image[idxDim], res, -1, kernelX, kernelY, Point(-1, -1),
+			sepFilter2D(convt_image[idxDim], res, CV_32F, kernelX, kernelY, Point(-1, -1),
 				    0, BORDER_REFLECT);
 			curRes[idxFilter] = res.clone(); // not cloning causes wierd issues.
 
@@ -670,6 +689,8 @@ void getScoresandCombine_Approx(const TILDEobjects & cas,
 	int idxMax = 0;
 
 	vector < Mat > curRes((int)cas.filters.size() / 2, Mat::zeros(convt_image[0].size(), CV_32F));	// temp storage
+	//LOGD("first scaleAdd gone %d %d",curRes[0].type(),cas.filters.size() / 2);
+
 
 	parallel_for_(Range(0, (int)cas.filters.size() / 2),
 		      Parallel_process(convt_image, nbApproximatedFilters, cas, curRes));
@@ -683,18 +704,24 @@ void getScoresandCombine_Approx(const TILDEobjects & cas,
 			int idxMax = idxOrig % nbMax;
 
 //			Mat result = res[idxSum][idxMax];
-			for (int idxFilter = 0; idxFilter < cas.filters.size() / 2; idxFilter++)
-				cv::scaleAdd(curRes[idxFilter], cas.coeffs[idxOrig][idxFilter], res[idxSum][idxMax], res[idxSum][idxMax]);
+			for (int idxFilter = 0; idxFilter < cas.filters.size() / 2; idxFilter++) //{
+				//LOGD("first scaleAdd gone %d %d",curRes[idxFilter].type(),res[idxSum][idxMax].type() );
+				cv::scaleAdd(curRes[idxFilter], cas.coeffs[idxOrig][idxFilter], res[idxSum][idxMax],
+				             res[idxSum][idxMax]);
 //					result = result + cas.coeffs[idxOrig][idxFilter] * curRes[idxFilter];
 
+			//}
+			//LOGD("first scaleAdd gone");
 			cv::add(res[idxSum][idxMax], cas.bias[idxMax + idxSum*nbMax], res[idxSum][idxMax]);
 //			res[idxSum][idxMax] = result + cas.bias[idxMax + idxSum*nbMax];
 
+			//LOGD("first Add gone");
 			 if (idxOrig % nbMax == 0)
 			 	 maxVal = res[idxSum][idxMax];
 			 else
 			 	 maxVal = max(res[idxSum][idxMax],maxVal);
 
+			//LOGD("second scaleAdd");
 			 if ((idxOrig+1) % nbMax == 0)//the last one
 			 {
 //				// sign and sum
@@ -986,7 +1013,7 @@ Mat sumMatArray(const vector < Mat > &MatArray)
 vector < Mat > getGradImage(const Mat & input_color_image)
 {
 	if (input_color_image.channels() != 3) {
-		LOGE("Need a 3-channel image");
+		LOGE("Need a 3-channel image (getGradImage)");
 	}
 	//the output
 	vector < Mat > gradImage(3);
@@ -1103,7 +1130,7 @@ vector < Mat > getGradImage(const Mat & input_color_image)
 vector < Mat > getLuvImage(const Mat & input_color_image)
 {
 	if (input_color_image.channels() != 3) {
-		LOGE("Need a 3-channnel image");
+		LOGE("Need a 3-channnel image (getLuvImage)");
 	}
     vector < Mat > luvImage(3);
 	for (int idxC = 0; idxC < 3; ++idxC) {
@@ -1246,7 +1273,7 @@ vector < Mat > getLuvImage(const Mat & input_color_image)
 
 void ComputeImageDerivatives(const cv::Mat & image, cv::Mat & imageDx, cv::Mat & imageDy)
 {
-	int ddepth = -1;	//same image depth as source
+	int ddepth = CV_32F;	//same image depth as source
 	double scale = 1 / 32.0;	// normalize wrt scharr mask for having exact gradient
 	double delta = 0;
 
@@ -1338,9 +1365,12 @@ TILDEobjects getTILDEApproxObjects(const string & name, void *_p)
 	std::vector < std::string > tokens;
 
 	//get parameters
-	getline(fic, lineread);
+	//load param 1st lines
+	getline(fic, lineread);//Load
 	tokens.clear();
 	Tokenize(lineread, tokens);
+
+	//LOGD("the line is %s",lineread.c_str());
 
 	if (param != NULL) {	//load param 1st lines
 		for (int i = 0; i < tokens.size(); i++) {
@@ -1351,9 +1381,14 @@ TILDEobjects getTILDEApproxObjects(const string & name, void *_p)
 			res.parameters.push_back(stof(delSpaces(tokens[i])));
 		}
 	}
+	//=---------------------
 
 	//start processing...
+	//load param 2sd lines
 	getline(fic, lineread);
+
+	//LOGD("the line is %s",lineread.c_str());
+
 	tokens.clear();
 	Tokenize(lineread, tokens);
 	if (tokens.size() != 5) {
@@ -1367,7 +1402,7 @@ TILDEobjects getTILDEApproxObjects(const string & name, void *_p)
 	int nbChannels = stoi(delSpaces(tokens[3]));
 	int sizeFilters = stoi(delSpaces(tokens[4]));
 
-	if (param != NULL)	//load param 1st lines
+	if (param != NULL)
 	{
 		param->push_back(nbMax);
 		param->push_back(nbSum);
@@ -1382,7 +1417,8 @@ TILDEobjects getTILDEApproxObjects(const string & name, void *_p)
 		res.parameters.push_back(nbChannels);//3
 		res.parameters.push_back(sizeFilters);
 	}
-	//--------------------
+	//=--------------------
+
 
 	//get bias
 	getline(fic, lineread);

@@ -45,6 +45,12 @@
 
  #include <opencv2/opencv.hpp>
 
+#include <android/log.h>
+#define  LOG_TAG    "TILDE-NMS"
+#define  LOGD(...)  __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
+#define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
+
+
 using namespace std;
 using namespace cv;
 
