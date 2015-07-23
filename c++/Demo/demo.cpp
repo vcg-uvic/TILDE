@@ -57,7 +57,7 @@ vector<KeyPoint> testAndDump(const Mat &I,const string &pathFilter, const int &n
 	{
 		t1 = high_resolution_clock::now();
 		// Run TILDE
-	    kps = getTILDEKeyPoints(I, pathFilter, useApprox,true,false,score);
+	    kps = getTILDEKeyPoints(I, pathFilter, useApprox,true,-std::numeric_limits<float>::infinity(),score);
 		t2 = high_resolution_clock::now();
 
 		time_spent += duration_cast<duration<double>>(t2 - t1).count();
@@ -102,7 +102,7 @@ vector<KeyPoint> test_fast(const Mat &I,const string &pathFilter, const int &nbT
 	{
 		t1 = high_resolution_clock::now();
 		// Run TILDE
-	    kps = getTILDEKeyPoints_fast(I, pathFilter,true,false,score);
+	    kps = getTILDEKeyPoints_fast(I, pathFilter,true,-std::numeric_limits<float>::infinity(),score);
 		t2 = high_resolution_clock::now();
 
 		time_spent += duration_cast<duration<double>>(t2 - t1).count();

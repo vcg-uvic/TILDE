@@ -52,16 +52,16 @@
 
 
 #ifdef __ANDROID__
-	#include <android/log.h>
-	#define  LOG_TAG    "TILDE"
-    #define  LOGD(...)  __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
-    #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
+#include <android/log.h>
+#define  LOG_TAG    "TILDE"
+#define  LOGD(...)  __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
+#define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
-	inline float stof(const string& f){return atof(f.c_str()); };
-	inline int stoi(const string& f){return atoi(f.c_str()); };
+inline float stof(const string& f){return atof(f.c_str()); };
+inline int stoi(const string& f){return atoi(f.c_str()); };
 #else
-    #define  LOGD(...)  std::cout<<__VA_ARGS__<<std::endl;
-    #define  LOGE(...)  throw std::runtime_error(__VA_ARGS__);
+#define  LOGD(...)  printf(__VA_ARGS__);//std::cout<<__VA_ARGS__<<std::endl;
+#define  LOGE(...)  printf(__VA_ARGS__);//throw std::runtime_error(__VA_ARGS__);
 #endif
 
 
@@ -117,9 +117,12 @@ public:
 	string name;
 
 	//temporary memory init once only
-	Mat respImageFinal;
-    vector < Mat > convt_image;
+	Mat outputScore;
+	vector < Mat > vectorInput;
 	vector < KeyPoint > res_with_score;
+	float threshold;//used to dynamically tune the threshold to get max 2*#KP
+	float scale = 10;
+	float orientation = 0;
 };
 
 
@@ -127,19 +130,19 @@ public:
 //--------------------------------------------------------------------------------------
 // TILDE Keypoint extraction function
 vector < KeyPoint > getTILDEKeyPoints(
-	const Mat & indatav,
-	const string & nameFilter,
-	const bool useApprox,
-	const bool sortMe = false,
-	const bool keepPositiveScoreOnly = false,
-	Mat * score = NULL);
+		const Mat & indatav,
+		const string & nameFilter,
+		const bool useApprox,
+		const bool sortMe = false,
+		const float threshold = -std::numeric_limits<float>::infinity(),
+		Mat * score = NULL);
 
 vector < KeyPoint > getTILDEKeyPoints_fast(
-	const Mat & indatav,
-	const string & nameFilter,
-	const bool sortMe = false,
-	const bool keepPositiveScoreOnly = false,
-	Mat * score = NULL);
+		const Mat & indatav,
+		const string & nameFilter,
+		const bool sortMe = false,
+		const float threshold = -std::numeric_limits<float>::infinity(),
+		Mat * score = NULL);
 
 Mat normalizeScore(const Mat& score);
 //--------------------------------------------------------------------------------------
@@ -147,55 +150,53 @@ Mat normalizeScore(const Mat& score);
 
 // Read TILDE filters from the txt file
 TILDEobjects getTILDEApproxObjects(
-	const string & name,
-	void *_p);
+		const string & name,
+		void *_p);
 
 // Apply and get TILDE keypoints in < x, y, score > format
 vector < Point3f > applyApproxFilters(
-	const Mat & p,
-	const TILDEobjects & why,
-	const vector < float >&param,
-	const bool useDescriptorField,
-	const bool sortMe,
-	const bool keep_only_positive,
-	Mat * score);
+		const Mat & p,
+		const TILDEobjects & why,
+		const bool useDescriptorField,
+		const bool sortMe,
+		const float threshold = -std::numeric_limits<float>::infinity(),
+		Mat * score = NULL);
 
 // Apply and get TILDE keypoints in < x, y, score > format
 vector < KeyPoint > applyApproxFilters_fast(
-	const Mat & p,
-	TILDEobjects & why,
-	const vector < float >&param,
-	const bool sortMe,
-	const bool keep_only_positive,
-	Mat * score);
+		const Mat & p,
+		TILDEobjects & why,
+		const bool sortMe,
+		const float threshold = -std::numeric_limits<float>::infinity(),
+		Mat * score = NULL);
 
 // Apply and get TILDE score map
 vector < vector < Mat > >getScoresForApprox(
-	const TILDEobjects & cas,
-	const vector < Mat > &convt_image);
+		const TILDEobjects & cas,
+		const vector < Mat > &vectorInput);
 
 void getScoresandCombine_Approx(const TILDEobjects & cas,
-						       const vector < Mat > &convt_image,
-						       const bool keep_only_positive,
-						       	Mat *output);
+                                const vector < Mat > &vectorInput,
+                                const float threshold,
+                                Mat *output);
 
 //--------------------------------------------------------------------------------------
 // For Non approximated TILDE
 
 // Read TILDE filters from txt file
 vector < vector < lfilter > >getTILDENonApproxFilters(
-	const string & name,
-	void *param = NULL);
+		const string & name,
+		void *param = NULL);
 
 // Apply and get TILDE keypoints in < x, y, score > format
 vector < Point3f > applyNonApproxFilters(
-	const Mat & p,
-	const vector < vector < lfilter > >&dual_cascade_filters,
-	const vector < float >&param,
-	const bool useDescriptorField,
-	const bool sortMe,
-	const bool keep_only_positive,
-	Mat * score);
+		const Mat & p,
+		const vector < vector < lfilter > >&dual_cascade_filters,
+		const bool useDescriptorField,
+		const bool sortMe,
+		const float resizeRatio = 1,
+		const float threshold = -std::numeric_limits<float>::infinity(),
+		Mat * score = NULL);
 
 
 
@@ -204,10 +205,11 @@ vector < Point3f > applyNonApproxFilters(
 
 // Function for reading the txt file. Calls appropriate function for approx and non approx
 TILDEobjects getTILDEObject(
-	const string & name,
-	void *_p,
-	bool useApprox,
-	bool useDescriptorField);
+		const string & name,
+		bool useApprox,
+		bool useDescriptorField
+		//	,float threshold = -numeric_limits<float>::infinity()
+);
 
 // Additional functions for parsing
 template < class T > T sToT(std::string text)
