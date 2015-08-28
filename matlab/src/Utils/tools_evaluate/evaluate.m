@@ -7,9 +7,9 @@
 % Created: Tue Jun 16 17:14:18 2015 (+0200)
 % Version: 
 % Package-Requires: ()
-% Last-Updated: Fri Aug 28 14:30:27 2015 (+0200)
+% Last-Updated: Fri Aug 28 14:42:28 2015 (+0200)
 %           By: Kwang
-%     Update #: 2
+%     Update #: 3
 % URL: 
 % Doc URL: 
 % Keywords: 
@@ -74,7 +74,7 @@ end
          
          %for standart, we should not use growAndScore
          %pic i vs pic i+n/2
-         [score{i}] = growAndScore(features{i},features{i+size(features,2)/2},imgs{i}, Hs{i}), range, repeatabilityType);
+         [score{i}] = growAndScore(features{i},features{i+size(features,2)/2},imgs{i}, Hs{i}, range, repeatabilityType);
      end
     AUC = mean(cell2mat(score),2);
 end
