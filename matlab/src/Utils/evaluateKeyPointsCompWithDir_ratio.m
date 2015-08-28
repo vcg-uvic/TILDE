@@ -7,9 +7,9 @@
 % Created: Tue Jun 16 17:13:51 2015 (+0200)
 % Version: 
 % Package-Requires: ()
-% Last-Updated: Tue Jun 16 17:13:57 2015 (+0200)
+% Last-Updated: Fri Aug 28 14:33:33 2015 (+0200)
 %           By: Kwang
-%     Update #: 1
+%     Update #: 2
 % URL: 
 % Doc URL: 
 % Keywords: 
@@ -59,6 +59,7 @@ p.omp_num_threads = '16';
 p.rootTest = [sRoot '/../data/' p.dataset_name '/test'];
 p.test_img_list_filename = fullfile(p.rootTest,'test_imgs.txt');
 p.optionalTildeSuffix = parameters.optionalTildeSuffix;
+p.repeatabilityType = parameters.repeatabilityType;
 
 setenv('OMP_NUM_THREADS', p.omp_num_threads);
 
@@ -160,6 +161,7 @@ setenv('OMP_NUM_THREADS', p.omp_num_threads);
     %%-----------sort features
     pa.nbFeat = num_key;%return the nbFeat highest feature (use score for the sorting)
     pa.bDoAdaptiveNMS = false;
+    pa.repeatabilityType = p.repeatabilityType;
 
     idx_sorted_method = 1;
     for i_method = 1:nNumMethods

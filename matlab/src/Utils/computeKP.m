@@ -1,4 +1,4 @@
-%% computeKP.m --- 
+ %% computeKP.m --- 
 % 
 % Filename: computeKP.m
 % Description: 
@@ -7,9 +7,9 @@
 % Created: Tue Jun 16 17:13:09 2015 (+0200)
 % Version: 
 % Package-Requires: ()
-% Last-Updated: Tue Jun 16 17:13:36 2015 (+0200)
+% Last-Updated: Fri Aug 28 14:32:15 2015 (+0200)
 %           By: Kwang
-%     Update #: 1
+%     Update #: 2
 % URL: 
 % Doc URL: 
 % Keywords: 
@@ -111,7 +111,7 @@ function Allrepeatability = computeKP(parameters)
     end
     AllrepeatabilityCross = cell2mat(AllrepeatabilityCross);
     
-    save(['results_' nameDataset '_' num2str(numberOfKeypoints{1})]);
+    save(['results_' nameDataset '_' num2str(numberOfKeypoints{1}) '_' parameters.repeatabilityType]);
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% computeKP.m ends here

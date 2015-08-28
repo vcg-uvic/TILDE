@@ -7,9 +7,9 @@
 % Created: Tue Jun 16 17:10:45 2015 (+0200)
 % Version: 
 % Package-Requires: ()
-% Last-Updated: Tue Jun 16 17:11:09 2015 (+0200)
+% Last-Updated: Fri Aug 28 14:31:13 2015 (+0200)
 %           By: Kwang
-%     Update #: 2
+%     Update #: 3
 % URL: 
 % Doc URL: 
 % Keywords: 
@@ -48,6 +48,7 @@ parameters.models = {'Chamonix'};
 parameters.optionalTildeSuffix = 'Standard';
 parameters.testsets = {'bark','bikes','boat','graf','leuven','trees','ubc', 'wall', 'notredame', 'obama', 'yosemite', 'paintedladies', 'rushmore'}; 
 parameters.numberOfKeypoints  = {1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000};
+parameters.repeatabilityType = 'OXFORD';
 
 computeKP(parameters);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -7,9 +7,9 @@
 % Created: Tue Jun 16 17:14:18 2015 (+0200)
 % Version: 
 % Package-Requires: ()
-% Last-Updated: Tue Jun 16 17:14:23 2015 (+0200)
+% Last-Updated: Fri Aug 28 14:30:27 2015 (+0200)
 %           By: Kwang
-%     Update #: 1
+%     Update #: 2
 % URL: 
 % Doc URL: 
 % Keywords: 
@@ -68,9 +68,13 @@ end
     score = cell(1,size(features,2)/2);
      for i=1:size(features,2)/2
          
+         range = 5;                     % this is by default radius based matching. not used for
+                                        % oxford
+         repeatabilityType = pb.repeatabilityType;
+         
          %for standart, we should not use growAndScore
          %pic i vs pic i+n/2
-         [score{i}] = growAndScore(features{i},features{i+size(features,2)/2},imgs{i}, Hs{i});%, range, repeatabilityType);
+         [score{i}] = growAndScore(features{i},features{i+size(features,2)/2},imgs{i}, Hs{i}), range, repeatabilityType);
      end
     AUC = mean(cell2mat(score),2);
 end

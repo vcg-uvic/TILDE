@@ -7,9 +7,9 @@
 % Created: Tue Jun 16 17:11:36 2015 (+0200)
 % Version: 
 % Package-Requires: ()
-% Last-Updated: Tue Jun 16 17:11:41 2015 (+0200)
+% Last-Updated: Fri Aug 28 14:34:36 2015 (+0200)
 %           By: Kwang
-%     Update #: 1
+%     Update #: 2
 % URL: 
 % Doc URL: 
 % Keywords: 
@@ -48,6 +48,7 @@ parameters.models = {'Mexico', 'Panorama','Chamonix', 'StLouis', 'Courbevoie', '
 parameters.testsets = {'Mexico', 'Panorama', 'Chamonix', 'StLouis', 'Courbevoie', 'Frankfurt'};
 parameters.optionalTildeSuffix = '2percents';
 parameters.numberOfKeypoints  = {85,161,123,0.02,0.02,0.02};
+parameters.repeatabilityType = 'RADIUS';
 
 Allrepeatability = computeKP(parameters);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
