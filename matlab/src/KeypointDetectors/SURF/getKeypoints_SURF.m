@@ -7,9 +7,9 @@
 % Created: Tue Jun 16 17:20:54 2015 (+0200)
 % Version: 
 % Package-Requires: ()
-% Last-Updated: Tue Jun 16 17:21:08 2015 (+0200)
+% Last-Updated: Fri Aug 28 15:05:31 2015 (+0200)
 %           By: Kwang
-%     Update #: 1
+%     Update #: 2
 % URL: 
 % Doc URL: 
 % Keywords: 
@@ -51,7 +51,8 @@ function [keypts] = getKeypoints_SURF(img_info, p)
         c = feat(5,:);
         % obtain scales
         scale = sqrt(a.*c - b.^2); % sqrt of determinant (sqrt of product of eigs)
-        scale = 1./sqrt(scale); % inverse becuz it's actually inv of [a b; b c]
+        scale = 1./sqrt(scale); % inverse becuz it's actually inv of [a b; b c] and also
+                                % additional sqrt as a = 1/scale^2 if b = 0
 
         keypts = [feat(1:2,:); zeros(5,size(feat,2))];
         keypts(5,:) = score';
