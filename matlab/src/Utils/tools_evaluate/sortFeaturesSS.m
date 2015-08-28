@@ -75,7 +75,7 @@ end
             [v, idx2] = sort(score,'descend');
             %position of first smaller than thrs
 %             ix = find(v >= thrs, 1, 'last');
-            stop = uint8(min([nbFeat size(v,2)]));
+            stop = uint64(min([nbFeat size(v,2)]));
             feat{i} = features{i}(:,idx2(1:stop));
         end
         
