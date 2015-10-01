@@ -28,7 +28,7 @@ set(SRCS src/libTILDE.cpp src/NonMaxSup.cpp)
 #option(WITH_TEST_STATIC "Build Generator tests" OFF)
 
 set(CMAKE_BUILD_TYPE Release)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC -O2") #added O3
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 
