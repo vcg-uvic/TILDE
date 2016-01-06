@@ -62,9 +62,11 @@ main(int argc, char *argv[]) {
 	for(int i=0; i < keypts.size(); ++i){
 		ofs_keypoints << std::setprecision(10) << keypts[i].pt.x << " ";
 		ofs_keypoints << std::setprecision(10) << keypts[i].pt.y << " ";
-		ofs_keypoints << std::setprecision(10) << 1.0 / (keypts[i].size*keypts[i].size) << " ";
+		ofs_keypoints << std::setprecision(10) << 1.0 / (0.5*keypts[i].size*0.5*keypts[i].size) << " "; // 0.5 since
+																										// opencv uses
+																										// diameter
 		ofs_keypoints << 0 << " ";
-		ofs_keypoints << std::setprecision(10) << 1.0 / (keypts[i].size*keypts[i].size) ;
+		ofs_keypoints << std::setprecision(10) << 1.0 / (0.5*keypts[i].size*0.5*keypts[i].size) ;
 		ofs_keypoints << endl;
 		ofs_score << std::setprecision(10) << keypts[i].response << endl;
 	}
