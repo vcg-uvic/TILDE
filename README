@@ -128,7 +128,7 @@ NOTE:
 Codes run  partially on Mac  OSX (some competitor  methods are not  available on
 this platform) and  almost completelly on Linux (all the  competitor methods are
 available  on   Linux  except   EdgeFoci.   We  provided   pre-computed  results
-separately, available at project web page http://cvlab.epfl.ch/research/tilde)
+separately, available at project web page https://www.epfl.ch/labs/cvlab/research/descriptors-and-keypoints/research-tilde/)
 
 In order  to avoid detecting  the same  keypoints multiple times,  This software
 USES CACHING BY DEFAULT.  It will  save computed keypoints in sub-folders of the
